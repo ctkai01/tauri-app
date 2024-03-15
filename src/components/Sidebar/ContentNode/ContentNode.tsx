@@ -1,6 +1,7 @@
 import * as React from "react";
 import { AiFillFolder, AiFillFolderOpen } from "react-icons/ai";
-import { Category, Node } from "../Sidebar";
+import {  Node } from "../Sidebar";
+import { Category } from "../../../pages/Home";
 
 interface ContentNodeProps {
   node: Node;

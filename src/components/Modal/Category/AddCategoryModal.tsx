@@ -8,17 +8,16 @@ import {
   TextInput,
 } from "flowbite-react";
 import { useForm } from "react-hook-form";
+import { CreateCategory } from "../../../models";
+import { schemeCreateCategory } from "../../../validators";
 import { toast } from "react-toastify";
-import { UpdateCategory } from "../../models";
-import { schemeUpdateCategory } from "../../validators";
-import { Category } from "../Sidebar/Sidebar";
+import { Category } from "../../../pages/Home";
 
-export interface IUpdateCategoryModalProps {
+export interface IAddCategoryModalProps {
   isOpen: boolean;
-  categoryChose: Category;
-
+  categoryChose: Category | null;
   handleModal: (state: boolean) => void;
-  handleUpdateCategory: (data: UpdateCategory) => void;
+  handleAddCategory: (data: CreateCategory) => void;
 }
 
 const customThemeModal: CustomFlowbiteTheme = {
@@ -30,26 +29,22 @@ const customThemeModal: CustomFlowbiteTheme = {
   },
 };
 
-export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
-  const { isOpen, categoryChose, handleModal, handleUpdateCategory } = props;
+export default function AddCategoryModal(props: IAddCategoryModalProps) {
+  const { isOpen, categoryChose, handleModal, handleAddCategory } = props;
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<UpdateCategory>({
+  } = useForm<CreateCategory>({
     mode: "onChange",
-    resolver: yupResolver(schemeUpdateCategory),
-    defaultValues: {
-      id: categoryChose.id,
-      name: categoryChose.name
-    },
+    resolver: yupResolver(schemeCreateCategory),
   });
-  const onSubmit = (data: UpdateCategory) => {
+  const onSubmit = (data: CreateCategory) => {
     console.log(data);
-    handleUpdateCategory(data);
+    handleAddCategory(data);
     reset();
-    toast(<div className="font-bold">Cập nhật nhóm hàng thành công</div>, {
+    toast(<div className="font-bold">Thêm mới nhóm hàng thành công</div>, {
       draggable: false,
       position: "top-right",
       type: "success",
@@ -67,7 +62,7 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
         popup
       >
         <Modal.Header>
-          <p className="text-sm font-bold ">Cập nhật nhóm hàng</p>
+          <p className="text-sm font-bold ">Thêm mới nhóm hàng</p>
         </Modal.Header>
         <Modal.Body>
           <form
@@ -83,14 +78,22 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
                     value="Mã nhóm hàng"
                   />
                 </div>
-                <TextInput
-                  id="category_id"
-                  type="text"
-                  placeholder=""
-                  className="flex-1"
-                  color={errors.id ? "failure" : ""}
-                  {...register("id")}
-                />
+                <div className="flex items-center">
+                  <TextInput
+                    type="text"
+                    className="flex-1"
+                    disabled
+                    placeholder={categoryChose ? categoryChose.id : ""}
+                  />
+                  <span className="mx-1">+</span>
+                  <TextInput
+                    id="category_id"
+                    type="text"
+                    className="flex-1"
+                    color={errors.id ? "failure" : ""}
+                    {...register("id")}
+                  />
+                </div>
               </div>
               {errors.id ? (
                 <div className="text-red-500 text-sm mt-1">
@@ -134,7 +137,7 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
               <TextInput
                 id="parent_id"
                 type="text"
-                placeholder="TG"
+                placeholder={categoryChose ? categoryChose.id : ""}
                 className="flex-1"
                 disabled
               />

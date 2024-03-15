@@ -1,24 +1,28 @@
-import { Button } from "flowbite-react";
+import { Button, Tooltip } from "flowbite-react";
 import * as React from "react";
 import { BsFillPencilFill } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import AddCategoryModal from "../Modal/AddCategoryModal";
+import AddCategoryModal from "../Modal/Category/AddCategoryModal";
 import ContentNode from "./ContentNode/ContentNode";
 import { CreateCategory, UpdateCategory } from "../../models";
-import UpdateCategoryModal from "../Modal/UpdateCategoryModal";
+import UpdateCategoryModal from "../Modal/Category/UpdateCategoryModal";
+import { toast } from "react-toastify";
+import { GrPowerReset } from "react-icons/gr";
+import DeleteCategoryModal from "../Modal/Category/DeleteCategoryModal ";
+import { Category } from "../../pages/Home";
 
-export interface ISidebarProps {}
+export interface ISidebarProps {
+  categoryChose: Category | null
+  handleSetCategoryChose: (category: Category | null) => void;
+}
 
 export interface Node {
   data: Category;
   children: Node[];
 }
 
-export interface Category {
-  name: string;
-  id: string;
-}
+
 
 const data: Node[] = [
   {
@@ -62,14 +66,15 @@ const data: Node[] = [
 ];
 
 export default function Sidebar(props: ISidebarProps) {
-  const [categoryChose, setCategoryChose] = React.useState<Category | null>(
-    null
-  );
-
+ 
+  const { categoryChose, handleSetCategoryChose } = props;
   const [categories, setCategories] = React.useState<Node[]>(data);
 
   const [openAddCategoryModal, setOpenAddCategoryModal] = React.useState(false);
   const [openUpdateCategoryModal, setOpenUpdateCategoryModal] =
+    React.useState(false);
+
+  const [openDeleteCategoryModal, setOpenDeleteCategoryModal] =
     React.useState(false);
 
   function handleActionAddCategoryModal(state: boolean) {
@@ -80,8 +85,12 @@ export default function Sidebar(props: ISidebarProps) {
     setOpenUpdateCategoryModal(state);
   }
 
+  function handleActionDeleteCategoryModal(state: boolean) {
+    setOpenDeleteCategoryModal(state);
+  }
+
   const handleCategory = (category: Category) => {
-    setCategoryChose(category);
+    handleSetCategoryChose(category);
   };
 
   const addNodeToChildren = (
@@ -107,6 +116,61 @@ export default function Sidebar(props: ISidebarProps) {
       return node;
     });
   };
+
+  const deleteNode = (nodes: Node[], idToDelete: string): Node[] => {
+    return nodes.reduce((acc: Node[], node: Node) => {
+      // Check if the current node's ID matches the ID to delete
+      if (node.data.id === idToDelete) {
+        // Skip this node and its children (effectively deleting it)
+        return acc;
+      } else {
+        // Keep this node and its children
+        const updatedChildren = deleteNode(node.children, idToDelete);
+        return [
+          ...acc,
+          {
+            ...node,
+            children: updatedChildren,
+          },
+        ];
+      }
+    }, []);
+  };
+
+  React.useEffect(() => {
+    console.log("catch")
+    if (
+      !categoryChose &&
+      (openUpdateCategoryModal || openDeleteCategoryModal)
+    ) {
+      toast(<div className="font-bold">Vui lòng chọn nhóm hàng</div>, {
+        draggable: false,
+        position: "top-right",
+        type: "warning",
+      });
+      handleActionDeleteCategoryModal(false)
+      handleActionUpdateCategoryModal(false);
+    }
+  }, [categoryChose, openUpdateCategoryModal, openDeleteCategoryModal]);
+
+  function updateNode(
+    nodes: Node[],
+    id: string,
+    updatedCategory: Category
+  ): Node[] {
+    return nodes.map((n) => {
+      if (n.data.id === id) {
+        // If the current node matches the ID, update its data
+        return { ...n, data: updatedCategory };
+      } else if (n.children.length > 0) {
+        // If the current node has children, recursively update them
+        return { ...n, children: updateNode(n.children, id, updatedCategory) };
+      } else {
+        // If the current node does not match the ID and has no children, return it unchanged
+        return n;
+      }
+    });
+  }
   console.log("categoryChose: ", categoryChose);
   const handleAddCategory = (data: CreateCategory) => {
     const newID = `${categoryChose ? categoryChose.id : ""}${data.id}`;
@@ -125,16 +189,29 @@ export default function Sidebar(props: ISidebarProps) {
   };
 
   const handleUpdateCategory = (data: UpdateCategory) => {
-    // const newNode: Node = {
-    //   data: {
-    //     id: data.id,
-    //     name: data.name,
-    //   },
-    //   children: [],
-    // };
-    // const parentID = categoryChose ? categoryChose.id : "";
-    // const updatedCategories = addNodeToChildren(parentID, newNode, categories);
-    // setCategories(updatedCategories);
+    if (categoryChose) {
+      const updatedCategory: Category = {
+        id: data.id ? data.id : categoryChose?.id,
+        name: data.name ? data.name : categoryChose?.name,
+      };
+
+      console.log("updatedCategory: ", updatedCategory);
+      const updatedCategories = updateNode(
+        categories,
+        categoryChose.id,
+        updatedCategory
+      );
+      setCategories(updatedCategories);
+      handleSetCategoryChose(updatedCategory);
+    }
+  };
+
+  const handleDeleteCategory = () => {
+    if (categoryChose) {
+      setCategories((prevCategories) =>
+        deleteNode(prevCategories, categoryChose.id)
+      );
+    }
   };
   return (
     <div className="flex flex-col h-full">
@@ -145,12 +222,19 @@ export default function Sidebar(props: ISidebarProps) {
         handleAddCategory={handleAddCategory}
       />
       {categoryChose && (
-        <UpdateCategoryModal
-          isOpen={openUpdateCategoryModal}
-          categoryChose={categoryChose}
-          handleModal={handleActionUpdateCategoryModal}
-          handleUpdateCategory={handleUpdateCategory}
-        />
+        <>
+          <UpdateCategoryModal
+            isOpen={openUpdateCategoryModal}
+            categoryChose={categoryChose}
+            handleModal={handleActionUpdateCategoryModal}
+            handleUpdateCategory={handleUpdateCategory}
+          />
+          <DeleteCategoryModal
+            isOpen={openDeleteCategoryModal}
+            handleModal={handleActionDeleteCategoryModal}
+            handleDeleteCategory={handleDeleteCategory}
+          />
+        </>
       )}
 
       <div className="p-2 text-xs h-16">
@@ -160,7 +244,7 @@ export default function Sidebar(props: ISidebarProps) {
           <span className="font-bold">{categoryChose?.name}</span>
         </p>
       </div>
-      <div className="p-3 border-[2px] bg-white  flex-grow">
+      <div className="p-3 border-[4px] bg-white  flex-grow">
         {categories.map((node, index) => (
           <ContentNode
             key={index}
@@ -170,23 +254,41 @@ export default function Sidebar(props: ISidebarProps) {
         ))}
       </div>
       <div className="py-2 flex ">
-        <Button
-          className="mr-1"
-          color="success"
-          onClick={() => handleActionAddCategoryModal(true)}
-        >
-          <FaPlus />
-        </Button>
-
-        <Button
-          className="mr-1"
-          onClick={() => handleActionUpdateCategoryModal(true)}
-        >
-          <BsFillPencilFill />
-        </Button>
-        <Button className="mr-1" color="failure">
-          <MdDelete />
-        </Button>
+        <Tooltip content="Thêm nhóm hàng">
+          <Button
+            className="mr-1"
+            color="success"
+            onClick={() => handleActionAddCategoryModal(true)}
+          >
+            <FaPlus />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Cập nhật nhóm hàng">
+          <Button
+            className="mr-1"
+            onClick={() => handleActionUpdateCategoryModal(true)}
+          >
+            <BsFillPencilFill />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Xóa nhóm hàng">
+          <Button
+            className="mr-1"
+            color="failure"
+            onClick={() => setOpenDeleteCategoryModal(true)}
+          >
+            <MdDelete />
+          </Button>
+        </Tooltip>
+        <Tooltip content="Bỏ chọn nhóm hàng">
+          <Button
+            className="mr-1"
+            color="dark"
+            onClick={() => handleSetCategoryChose(null)}
+          >
+            <GrPowerReset />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   );
