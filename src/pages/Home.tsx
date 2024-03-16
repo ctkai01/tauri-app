@@ -18,13 +18,13 @@ export default function Home(props: IHomeProps) {
   return (
     <div className="h-screen">
       <div className="flex h-full text-xs bg-gray-100 pl-4">
-        <div className="w-1/4">
+        <div className="w-[20%]">
           <Sidebar
             categoryChose={categoryChose}
             handleSetCategoryChose={handleSetCategoryChose}
           />
         </div>
-        <div className="w-3/4">
+        <div className="w-[80%]">
           <HomeAction categoryChose={categoryChose} />
         </div>
       </div>

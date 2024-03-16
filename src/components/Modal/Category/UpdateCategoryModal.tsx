@@ -11,8 +11,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { UpdateCategory } from "../../../models";
 import { schemeUpdateCategory } from "../../../validators";
-import { Category } from "../../Sidebar/Sidebar";
 import { useEffect } from "react";
+import { Category } from "../../../pages/Home";
 
 export interface IUpdateCategoryModalProps {
   isOpen: boolean;

@@ -1,4 +1,4 @@
-import { CreateCategory, CreateProduct, UpdateCategory } from "../models";
+import { CreateCategory, CreateProduct, UpdateAvatar, UpdateCategory } from "../models";
 import *  as Yup from 'yup'
 
 const MAX_FILE_SIZE = 1024 * 1024 * 5; //5MB
@@ -15,6 +15,22 @@ export const schemeCreateProduct: Yup.ObjectSchema<CreateProduct> = Yup.object({
     .required("Đơn vi là bắt buộc")
     .min(1, "Đơn vi nhỏ hơn 1 ký tự")
     .max(50, "Đơn vi lớn hơn 30 ký tự"),
+
+  goldWeight: Yup.string(),
+  goldAge: Yup.string(),
+  stoneWeight: Yup.string(),
+  categoryID: Yup.number(),
+  wage: Yup.string(),
+  stonePrice: Yup.string(),
+  quantity: Yup.string().required("Số lượng là bắt buộc"),
+  price: Yup.string(),
+  note: Yup.string()
+    .min(1, "Ghi chú nhỏ hơn 1 ký tự")
+    .max(50, "Ghi chú lớn hơn 30 ký tự"),
+});
+
+
+export const schemeUpdateImage: Yup.ObjectSchema<UpdateAvatar> = Yup.object({
   image: Yup.mixed<File>()
     .test(
       "fileFormat",
@@ -32,24 +48,4 @@ export const schemeCreateProduct: Yup.ObjectSchema<CreateProduct> = Yup.object({
         file.length === 0 || // Check if `files` is not an empty list
         file.size <= MAX_FILE_SIZE
     ),
-  goldWeight: Yup.number(),
-  goldAge: Yup.number(),
-  stoneWeight: Yup.number(),
-  wage: Yup.number(),
-  stonePrice: Yup.number(),
-  price: Yup.string(),
-  note: Yup.string()
-    .min(1, "Ghi chú nhỏ hơn 1 ký tự")
-    .max(50, "Ghi chú lớn hơn 30 ký tự"),
 });
-
-
-// export const schemeUpdateCategory: Yup.ObjectSchema<UpdateCategory> =
-//   Yup.object({
-//     name: Yup.string()
-//       .min(1, "Tên nhóm hàng  nhỏ hơn 1 ký tự")
-//       .max(50, "Tên nhóm hàng  lớn hơn 50 ký tự"),
-//     id: Yup.string()
-//       .min(1, "Mã nhóm hàng nhỏ hơn 1 ký tự")
-//       .max(30, "Mã nhóm hàng lớn hơn 30 ký tự"),
-//   });

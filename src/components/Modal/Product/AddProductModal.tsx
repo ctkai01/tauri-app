@@ -2,18 +2,22 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Button,
   CustomFlowbiteTheme,
+  FileInput,
   Flowbite,
   Label,
   Modal,
+  Select,
+  Textarea,
   TextInput,
 } from "flowbite-react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { CreateCategory, CreateProduct } from "../../../models";
-import { schemeCreateCategory, schemeCreateProduct } from "../../../validators";
-import { toast } from "react-toastify";
-import { Category } from "../../../pages/Home";
+import { IoMdClose } from "react-icons/io";
 import { NumericFormat } from "react-number-format";
-
+import { ValidationError } from "yup";
+import { CreateProduct, UpdateAvatar } from "../../../models";
+import { Category } from "../../../pages/Home";
+import { schemeCreateProduct, schemeUpdateImage } from "../../../validators";
 export interface IAddProductModalProps {
   isOpen: boolean;
   categoryChose: Category | null;
@@ -32,12 +36,19 @@ const customThemeModal: CustomFlowbiteTheme = {
 
 export default function AddProductModal(props: IAddProductModalProps) {
   const { isOpen, categoryChose, handleModal } = props;
+  const [imageFile, setImageFile] = useState<File | undefined>(undefined);
+  const [imagePreview, setImagePreview] = useState("");
+  const [totalWeight, setTotalWeight] = useState("");
+  const inputImageRef = useRef<HTMLInputElement>(null);
+  const [errorImage, setErrorImage] = useState("");
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     control,
     reset,
+    watch,
   } = useForm<CreateProduct>({
     mode: "onChange",
     resolver: yupResolver(schemeCreateProduct),
@@ -47,6 +58,19 @@ export default function AddProductModal(props: IAddProductModalProps) {
     //   unit: "h"
     // }
   });
+  const goldWeight = watch("goldWeight") || "";
+  const stoneWeight = watch("stoneWeight") || "";
+  useEffect(() => {
+    const goldWeightNum = parseFloat(goldWeight);
+    const stoneWeightNum = parseFloat(stoneWeight);
+
+    if (!isNaN(goldWeightNum) && !isNaN(stoneWeightNum)) {
+      const newTotalWeight = (goldWeightNum || 0) + (stoneWeightNum || 0);
+      setTotalWeight(newTotalWeight.toFixed(2));
+    } else {
+      setTotalWeight("");
+    }
+  }, [goldWeight, stoneWeight]);
   const onSubmit = (data: CreateProduct) => {
     console.log(data);
     // handleAddCategory(data);
@@ -57,13 +81,43 @@ export default function AddProductModal(props: IAddProductModalProps) {
     //   type: "success",
     // });
 
-    handleModal(false);
+    // handleModal(false);
   };
   // const handleInputChange = (e: any) => {
   //   const input = e.target;
   //   const value = input.value.replace(/\D/g, ""); // Remove non-digit characters
   //   input.value = new Intl.NumberFormat().format(value); // Format the number with commas
   // };
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    try {
+      const data: UpdateAvatar = {
+        image: e.target.files ? e.target.files[0] : undefined,
+      };
+      const dataValidate = await schemeUpdateImage.validate(data);
+      const newFile = dataValidate.image;
+      setErrorImage("");
+      setImageFile(newFile);
+
+      if (newFile) {
+        setImagePreview(URL.createObjectURL(newFile));
+      }
+    } catch (e) {
+      if (e instanceof ValidationError) {
+        // setValue("image", undefined);
+        setErrorImage(e.message);
+      }
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImagePreview("");
+    setImageFile(undefined);
+    setErrorImage("");
+
+    if (inputImageRef && inputImageRef.current) {
+      inputImageRef.current.value = "";
+    }
+  };
   return (
     <Flowbite theme={{ theme: customThemeModal }}>
       <Modal
@@ -77,84 +131,394 @@ export default function AddProductModal(props: IAddProductModalProps) {
           <p className="text-sm font-bold ">Thêm mới hàng hóa</p>
         </Modal.Header>
         <Modal.Body>
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className=" max-w-md flex-col gap-4"
-          >
-            <div className=" mb-4">
-              <div className="flex items-center">
-                <div className="mb-2 min-w-[115px]">
-                  <Label
-                    htmlFor="name_category"
-                    className=" block"
-                    value="Tên nhóm hàng"
-                  />
-                </div>
-
-                <TextInput
-                  id="name_category"
-                  type="text"
-                  placeholder=""
-                  className="flex-1"
-                  color={errors.name ? "failure" : ""}
-                  {...register("name")}
-                />
-              </div>
-
-              {errors.name ? (
-                <div className="text-red-500 text-sm mt-1">
-                  <span>{errors.name.message}</span>
-                </div>
-              ) : (
-                <></>
-              )}
-            </div>
-            <div className=" mb-4">
-              <div className="flex items-center">
-                <div className="mb-2 min-w-[115px]">
-                  <Label
-                    htmlFor="name_category"
-                    className=" block"
-                    value="Giá"
-                  />
-                </div>
-                {/* <TextInput
-                  id="name_category"
-                  type="text"
-                  placeholder=""
-                  className="flex-1"
-                  color={errors.price ? "failure" : ""}
-                  {...register("price")}
-                  onChange={handleInputChange}
-                /> */}
-                <Controller
-                  name="price"
-                  control={control}
-                  render={({ field, }) => (
-                    <NumericFormat
-                      customInput={TextInput}
-                      thousandSeparator={true}
-                      allowNegative={false}
-                      prefix={"$ "}
-                      onValueChange={(v) => {
-                        //value without dollar sign
-                        console.log("dsds")
-                        field.onChange(v.value);
-                      }}
-                      className="w-full"
-                      value={field.value}
+          <form onSubmit={handleSubmit(onSubmit)} className="flex-col gap-4">
+            <div className="max-h-[400px] overflow-y-scroll pr-4">
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="name_category"
+                      className=" block"
+                      value="Tên nhóm hàng"
                     />
-                  )}
-                />
+                  </div>
+
+                  <TextInput
+                    id="name_category"
+                    type="text"
+                    placeholder=""
+                    className="flex-1"
+                    color={errors.name ? "failure" : ""}
+                    {...register("name")}
+                  />
+                </div>
+
+                {errors.name ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.name.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
               </div>
 
-              {errors.price ? (
-                <div className="text-red-500 text-sm mt-1">
-                  <span>{errors.price.message}</span>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label htmlFor="unit" className=" block" value="Đơn vị" />
+                  </div>
+
+                  <TextInput
+                    id="unit"
+                    type="text"
+                    placeholder=""
+                    className="flex-1"
+                    color={errors.name ? "failure" : ""}
+                    {...register("unit")}
+                  />
                 </div>
-              ) : (
-                <></>
-              )}
+
+                {errors.unit ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.unit.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className="mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="category_id"
+                      className=" block"
+                      value="Nhóm hàng"
+                    />
+                  </div>
+                  <Select
+                    id="category_id"
+                    required
+                    {...register("categoryID")}
+                    color={errors.name ? "failure" : ""}
+                    className="w-full"
+                  >
+                    <option value={1}>United States</option>
+                    <option value={2}>Canada</option>
+                    <option value={3}>France</option>
+                    <option value={4}>Germany</option>
+                  </Select>
+                </div>
+
+                {errors.categoryID ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.categoryID.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className="mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label htmlFor="image" className=" block" value="Ảnh" />
+                  </div>
+                  <div className="">
+                    <FileInput
+                      id="image"
+                      ref={inputImageRef}
+                      helperText={errorImage ? errorImage : ""}
+                      color={errorImage ? "failure" : ""}
+                      onChange={handleFileChange}
+                    />
+                    {imagePreview && (
+                      <div>
+                        <div className="flex justify-center border mt-2 relative">
+                          <img
+                            // src="https://www.flowbite-react.com/images/people/profile-picture-5.jpg"
+                            src={imagePreview}
+                            className="max-w-[150px]"
+                          />
+                          <div
+                            className="absolute right-0 top-0 cursor-pointer"
+                            onClick={() => handleRemoveImage()}
+                          >
+                            <IoMdClose />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="gold_weight"
+                      className=" block"
+                      value="TL vàng"
+                    />
+                  </div>
+
+                  <TextInput
+                    id="gold_weight"
+                    type="number"
+                    step="any"
+                    placeholder=""
+                    className="flex-1"
+                    color={errors.goldWeight ? "failure" : ""}
+                    {...register("goldWeight")}
+                  />
+                </div>
+
+                {errors.goldWeight ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.goldWeight.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="goldAge"
+                      className=" block"
+                      value="Tuổi vàng"
+                    />
+                  </div>
+
+                  <TextInput
+                    id="goldAge"
+                    type="number"
+                    step="any"
+                    placeholder=""
+                    className="flex-1"
+                    color={errors.goldAge ? "failure" : ""}
+                    {...register("goldAge")}
+                  />
+                </div>
+
+                {errors.goldAge ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.goldAge.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="stoneWeight"
+                      className=" block"
+                      value="KL đá"
+                    />
+                  </div>
+
+                  <TextInput
+                    id="stoneWeight"
+                    type="number"
+                    step="any"
+                    placeholder=""
+                    className="flex-1"
+                    color={errors.stoneWeight ? "failure" : ""}
+                    {...register("stoneWeight")}
+                  />
+                </div>
+
+                {errors.stoneWeight ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.stoneWeight.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="totalWeight"
+                      className=" block"
+                      value="Tổng TL"
+                    />
+                  </div>
+
+                  <TextInput
+                    id="totalWeight"
+                    type="number"
+                    step="any"
+                    placeholder=""
+                    className="flex-1"
+                    readOnly={true}
+                    value={totalWeight}
+                    color={""}
+                    // color={errors.stoneWeight ? "failure" : ""}
+                  />
+                </div>
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="wage"
+                      className=" block"
+                      value="Tiền công"
+                    />
+                  </div>
+                  <Controller
+                    name="wage"
+                    control={control}
+                    render={({ field }) => (
+                      <NumericFormat
+                        customInput={TextInput}
+                        thousandSeparator={true}
+                        allowNegative={false}
+                        prefix={""}
+                        onValueChange={(v) => {
+                          field.onChange(v.value);
+                        }}
+                        className="w-full"
+                        value={field.value}
+                      />
+                    )}
+                  />
+                </div>
+
+                {errors.wage ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.wage.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="stonePrice"
+                      className=" block"
+                      value="Tiền đá"
+                    />
+                  </div>
+                  <Controller
+                    name="stonePrice"
+                    control={control}
+                    render={({ field }) => (
+                      <NumericFormat
+                        customInput={TextInput}
+                        thousandSeparator={true}
+                        allowNegative={false}
+                        prefix={""}
+                        onValueChange={(v) => {
+                          field.onChange(v.value);
+                        }}
+                        className="w-full"
+                        value={field.value}
+                      />
+                    )}
+                  />
+                </div>
+
+                {errors.stonePrice ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.stonePrice.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="price"
+                      className=" block"
+                      value="Tiền hàng"
+                    />
+                  </div>
+                  <Controller
+                    name="price"
+                    control={control}
+                    render={({ field }) => (
+                      <NumericFormat
+                        customInput={TextInput}
+                        thousandSeparator={true}
+                        allowNegative={false}
+                        prefix={""}
+                        onValueChange={(v) => {
+                          field.onChange(v.value);
+                        }}
+                        className="w-full"
+                        value={field.value}
+                      />
+                    )}
+                  />
+                </div>
+
+                {errors.price ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.price.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="quantity"
+                      className=" block"
+                      value="Số lượng"
+                    />
+                  </div>
+
+                  <TextInput
+                    id="quantity"
+                    type="number"
+                    step="any"
+                    placeholder=""
+                    className="flex-1"
+                    color={errors.quantity ? "failure" : ""}
+                    {...register("quantity")}
+                  />
+                </div>
+
+                {errors.quantity ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.quantity.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label htmlFor="note" className=" block" value="Ghi chú" />
+                  </div>
+                  <Textarea
+                    id="note"
+                    placeholder=""
+                    rows={4}
+                    color={errors.note ? "failure" : ""}
+                    {...register("note")}
+                  />
+                </div>
+
+                {errors.note ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.note.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
             </div>
             <div className="flex text-xs justify-center gap-4 mt-3">
               <Button size="sm" color="success" type="submit">

@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { GrPowerReset } from "react-icons/gr";
 import DeleteCategoryModal from "../Modal/Category/DeleteCategoryModal ";
 import { Category } from "../../pages/Home";
+import { invoke } from "@tauri-apps/api/tauri";
 
 export interface ISidebarProps {
   categoryChose: Category | null
@@ -211,6 +212,7 @@ export default function Sidebar(props: ISidebarProps) {
       setCategories((prevCategories) =>
         deleteNode(prevCategories, categoryChose.id)
       );
+      handleActionDeleteCategoryModal(false);
     }
   };
   return (
@@ -253,7 +255,10 @@ export default function Sidebar(props: ISidebarProps) {
           />
         ))}
       </div>
-      <div className="py-2 flex ">
+      <div
+        className="py-2 flex flex-wrap justify-center
+      gap-2"
+      >
         <Tooltip content="Thêm nhóm hàng">
           <Button
             className="mr-1"
@@ -284,7 +289,13 @@ export default function Sidebar(props: ISidebarProps) {
           <Button
             className="mr-1"
             color="dark"
-            onClick={() => handleSetCategoryChose(null)}
+            // onClick={() => handleSetCategoryChose(null)}
+            onClick={async () => {
+              console.log("hey")
+              await invoke("greet", {
+                name: "Nam",
+              });
+            }}
           >
             <GrPowerReset />
           </Button>

@@ -7,3 +7,7 @@ export interface UpdateCategory {
   id?: string;
   name?: string;
 }
+
+export interface UpdateAvatar {
+  image?: File;
+}
