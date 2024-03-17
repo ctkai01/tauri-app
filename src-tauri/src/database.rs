@@ -2,7 +2,9 @@ use rusqlite::{named_params, Connection};
 use std::fs;
 use tauri::AppHandle;
 
-const CURRENT_DB_VERSION: u32 = 1;
+use crate::model::CreateCategory;
+
+const CURRENT_DB_VERSION: u32 = 0;
 
 /// Initializes the database connection, creating the .sqlite file if needed, and upgrading the database
 /// if it's out of date.
@@ -40,7 +42,7 @@ pub fn upgrade_database_if_needed(
         tx.execute_batch(
             "
        CREATE TABLE IF NOT EXISTS categories (
-        id TEXT PRIMARY KEY,
+        id TEXT PRIMARY KEY NOT NULL,
         name TEXT NOT NULL,
         parent_id TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -74,9 +76,9 @@ pub fn upgrade_database_if_needed(
     Ok(())
 }
 
-pub fn add_item(title: &str, db: &Connection) -> Result<(), rusqlite::Error> {
-    let mut statement = db.prepare("INSERT INTO items (title) VALUES (@title)")?;
-    statement.execute(named_params! { "@title": title })?;
+pub fn add_category(data: CreateCategory, db: &Connection) -> Result<(), rusqlite::Error> {
+    let mut statement = db.prepare("INSERT INTO categories (id, name, parent_id) VALUES (@id, @name, @category_id)")?;
+    statement.execute(named_params! {"@id": data.id, "@name": data.name,  "@category_id": data.category_id.unwrap_or_default() })?;
 
     Ok(())
 }

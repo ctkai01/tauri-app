@@ -4,20 +4,20 @@
 
 mod database;
 mod state;
-
+mod model;
+use model::CreateCategory;
 use state::{AppState, ServiceAccess};
 use tauri::{AppHandle, Manager, State};
 
 #[tauri::command]
-fn greet(app_handle: AppHandle, name: &str) -> String {
+fn create_category(app_handle: AppHandle, data: String) ->  Result<(), String> {
     // Should handle errors instead of unwrapping here
-    app_handle.db(|db| database::add_item(name, db)).unwrap();
+    let create_category: CreateCategory = serde_json::from_str(&data).map_err(|e| e.to_string())?;
 
-    let items = app_handle.db(|db| database::get_all(db)).unwrap();
+    app_handle.db(|db| database::add_category(create_category, db)).unwrap();
 
-    let items_string = items.join(" | ");
-    println!("Your name log: {}", items_string);
-    format!("Your name log: {}", items_string)
+    // let items = app_handle.db(|db| database::get_all(db)).unwrap();
+   Ok(())
 }
 
 fn main() {
@@ -36,7 +36,7 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![create_category])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

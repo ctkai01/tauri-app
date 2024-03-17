@@ -11,3 +11,10 @@ export interface UpdateCategory {
 export interface UpdateAvatar {
   image?: File;
 }
+
+
+export interface CreateCategoryToServer {
+  id: string;
+  name: string;
+  category_id: string | null;
+}

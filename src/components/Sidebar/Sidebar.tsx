@@ -5,7 +5,11 @@ import { FaPlus } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import AddCategoryModal from "../Modal/Category/AddCategoryModal";
 import ContentNode from "./ContentNode/ContentNode";
-import { CreateCategory, UpdateCategory } from "../../models";
+import {
+  CreateCategory,
+  CreateCategoryToServer,
+  UpdateCategory,
+} from "../../models";
 import UpdateCategoryModal from "../Modal/Category/UpdateCategoryModal";
 import { toast } from "react-toastify";
 import { GrPowerReset } from "react-icons/gr";
@@ -14,7 +18,7 @@ import { Category } from "../../pages/Home";
 import { invoke } from "@tauri-apps/api/tauri";
 
 export interface ISidebarProps {
-  categoryChose: Category | null
+  categoryChose: Category | null;
   handleSetCategoryChose: (category: Category | null) => void;
 }
 
@@ -22,8 +26,6 @@ export interface Node {
   data: Category;
   children: Node[];
 }
-
-
 
 const data: Node[] = [
   {
@@ -67,7 +69,6 @@ const data: Node[] = [
 ];
 
 export default function Sidebar(props: ISidebarProps) {
- 
   const { categoryChose, handleSetCategoryChose } = props;
   const [categories, setCategories] = React.useState<Node[]>(data);
 
@@ -139,7 +140,7 @@ export default function Sidebar(props: ISidebarProps) {
   };
 
   React.useEffect(() => {
-    console.log("catch")
+    console.log("catch");
     if (
       !categoryChose &&
       (openUpdateCategoryModal || openDeleteCategoryModal)
@@ -149,7 +150,7 @@ export default function Sidebar(props: ISidebarProps) {
         position: "top-right",
         type: "warning",
       });
-      handleActionDeleteCategoryModal(false)
+      handleActionDeleteCategoryModal(false);
       handleActionUpdateCategoryModal(false);
     }
   }, [categoryChose, openUpdateCategoryModal, openDeleteCategoryModal]);
@@ -174,19 +175,35 @@ export default function Sidebar(props: ISidebarProps) {
   }
   console.log("categoryChose: ", categoryChose);
   const handleAddCategory = (data: CreateCategory) => {
-    const newID = `${categoryChose ? categoryChose.id : ""}${data.id}`;
-    console.log("New ID: ", newID);
-    console.log("data.id ", data.id);
-    const newNode: Node = {
-      data: {
+    try {
+      const newID = `${categoryChose ? categoryChose.id : ""}${data.id}`;
+      console.log("New ID: ", newID);
+      console.log("data.id ", data.id);
+      const parentID = categoryChose ? categoryChose.id : "";
+
+      const dataSend: CreateCategoryToServer = {
+        category_id: categoryChose ? categoryChose.id : null,
         id: newID,
         name: data.name,
-      },
-      children: [],
-    };
-    const parentID = categoryChose ? categoryChose.id : "";
-    const updatedCategories = addNodeToChildren(parentID, newNode, categories);
-    setCategories(updatedCategories);
+      };
+
+      invoke("create_category", { data: JSON.stringify(dataSend) });
+      const newNode: Node = {
+        data: {
+          id: newID,
+          name: data.name,
+        },
+        children: [],
+      };
+      const updatedCategories = addNodeToChildren(
+        parentID,
+        newNode,
+        categories
+      );
+      setCategories(updatedCategories);
+    } catch (err: any) {
+      console.log("Error:", err);
+    }
   };
 
   const handleUpdateCategory = (data: UpdateCategory) => {
@@ -291,7 +308,7 @@ export default function Sidebar(props: ISidebarProps) {
             color="dark"
             // onClick={() => handleSetCategoryChose(null)}
             onClick={async () => {
-              console.log("hey")
+              console.log("hey");
               await invoke("greet", {
                 name: "Nam",
               });
