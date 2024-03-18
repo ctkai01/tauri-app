@@ -22,55 +22,64 @@ export interface ISidebarProps {
   handleSetCategoryChose: (category: Category | null) => void;
 }
 
-export interface Node {
-  data: Category;
-  children: Node[];
-}
+// export interface Node {
+//   data: Category;
+//   children: Node[];
+// }
 
-const data: Node[] = [
-  {
-    data: {
-      id: "TS",
-      name: "Trang suc",
-    },
-    children: [
-      {
-        data: {
-          id: "TSN",
-          name: "Nhan",
-        },
-        children: [
-          {
-            data: {
-              id: "TSNN",
-              name: "Trang suc nhan nam",
-            },
-            children: [],
-          },
-        ],
-      },
-      {
-        data: {
-          id: "TSD",
-          name: "Day",
-        },
-        children: [
-          {
-            data: {
-              id: "TSDVT",
-              name: "Day vang trang",
-            },
-            children: [],
-          },
-        ],
-      },
-    ],
-  },
-];
+// const data: Node[] = [
+//   {
+//     data: {
+//       id: "TS",
+//       name: "Trang suc",
+//     },
+//     children: [
+//       {
+//         data: {
+//           id: "TSN",
+//           name: "Nhan",
+//         },
+//         children: [
+//           {
+//             data: {
+//               id: "TSNN",
+//               name: "Trang suc nhan nam",
+//             },
+//             children: [],
+//           },
+//         ],
+//       },
+//       {
+//         data: {
+//           id: "TSD",
+//           name: "Day",
+//         },
+//         children: [
+//           {
+//             data: {
+//               id: "TSDVT",
+//               name: "Day vang trang",
+//             },
+//             children: [],
+//           },
+//         ],
+//       },
+//     ],
+//   },
+// ];
 
 export default function Sidebar(props: ISidebarProps) {
   const { categoryChose, handleSetCategoryChose } = props;
-  const [categories, setCategories] = React.useState<Node[]>(data);
+  const [categories, setCategories] = React.useState<Category[]>([]);
+
+  React.useEffect(() => {
+    const fetchCategories = async() => {
+      const categoryData: Category[] = await invoke("get_categories");
+      console.log(categoryData);
+      setCategories(categoryData);
+    }
+    fetchCategories()
+  }, [])
 
   const [openAddCategoryModal, setOpenAddCategoryModal] = React.useState(false);
   const [openUpdateCategoryModal, setOpenUpdateCategoryModal] =
@@ -95,43 +104,46 @@ export default function Sidebar(props: ISidebarProps) {
     handleSetCategoryChose(category);
   };
 
-  const addNodeToChildren = (
+  const addCategoryToChildren = (
     parentId: string,
-    newNode: Node,
-    nodes: Node[]
-  ): Node[] => {
+    newCategory: Category,
+    categories: Category[]
+  ): Category[] => {
     if (!parentId || parentId === "") {
-      return [...nodes, newNode]; // Add newNode to the root
+      return [...categories, newCategory]; // Add newNode to the root
     }
-    return nodes.map((node) => {
-      if (node.data.id === parentId) {
+    return categories.map((category) => {
+      if (category.id === parentId) {
         return {
-          ...node,
-          children: [...node.children, newNode],
+          ...category,
+          children: [...category.children, newCategory],
         };
-      } else if (node.children.length > 0) {
+      } else if (category.children.length > 0) {
         return {
-          ...node,
-          children: addNodeToChildren(parentId, newNode, node.children),
+          ...category,
+          children: addCategoryToChildren(parentId, newCategory, category.children),
         };
       }
-      return node;
+      return category;
     });
   };
 
-  const deleteNode = (nodes: Node[], idToDelete: string): Node[] => {
-    return nodes.reduce((acc: Node[], node: Node) => {
+  const deleteCategory = (
+    categories: Category[],
+    idToDelete: string
+  ): Category[] => {
+    return categories.reduce((acc: Category[], category: Category) => {
       // Check if the current node's ID matches the ID to delete
-      if (node.data.id === idToDelete) {
+      if (category.id === idToDelete) {
         // Skip this node and its children (effectively deleting it)
         return acc;
       } else {
         // Keep this node and its children
-        const updatedChildren = deleteNode(node.children, idToDelete);
+        const updatedChildren = deleteCategory(category.children, idToDelete);
         return [
           ...acc,
           {
-            ...node,
+            ...category,
             children: updatedChildren,
           },
         ];
@@ -155,21 +167,24 @@ export default function Sidebar(props: ISidebarProps) {
     }
   }, [categoryChose, openUpdateCategoryModal, openDeleteCategoryModal]);
 
-  function updateNode(
-    nodes: Node[],
+  function updateCategory(
+    categories: Category[],
     id: string,
-    updatedCategory: Category
-  ): Node[] {
-    return nodes.map((n) => {
-      if (n.data.id === id) {
+    updatedCategory: UpdateCategory
+  ): Category[] {
+    return categories.map((c) => {
+      if (c.id === id) {
         // If the current node matches the ID, update its data
-        return { ...n, data: updatedCategory };
-      } else if (n.children.length > 0) {
+        return { ...c, ...updatedCategory };
+      } else if (c.children.length > 0) {
         // If the current node has children, recursively update them
-        return { ...n, children: updateNode(n.children, id, updatedCategory) };
+        return {
+          ...c,
+          children: updateCategory(c.children, id, updatedCategory),
+        };
       } else {
         // If the current node does not match the ID and has no children, return it unchanged
-        return n;
+        return c;
       }
     });
   }
@@ -186,18 +201,21 @@ export default function Sidebar(props: ISidebarProps) {
         id: newID,
         name: data.name,
       };
+      const now = new Date();
 
+      // Format the current date and time as a string
+      const formattedDateTime = now.toISOString().replace('T', ' ').slice(0, 19);
       invoke("create_category", { data: JSON.stringify(dataSend) });
-      const newNode: Node = {
-        data: {
-          id: newID,
-          name: data.name,
-        },
+      const newCategory: Category = {
+        id: newID,
+        name: data.name,
+        parent_id: parentID,
+        created_at: formattedDateTime,
         children: [],
       };
-      const updatedCategories = addNodeToChildren(
+      const updatedCategories = addCategoryToChildren(
         parentID,
-        newNode,
+        newCategory,
         categories
       );
       setCategories(updatedCategories);
@@ -208,26 +226,26 @@ export default function Sidebar(props: ISidebarProps) {
 
   const handleUpdateCategory = (data: UpdateCategory) => {
     if (categoryChose) {
-      const updatedCategory: Category = {
+      const updatedCategory: UpdateCategory = {
         id: data.id ? data.id : categoryChose?.id,
         name: data.name ? data.name : categoryChose?.name,
       };
 
       console.log("updatedCategory: ", updatedCategory);
-      const updatedCategories = updateNode(
+      const updatedCategories = updateCategory(
         categories,
         categoryChose.id,
         updatedCategory
       );
       setCategories(updatedCategories);
-      handleSetCategoryChose(updatedCategory);
+      // handleSetCategoryChose(updatedCategory);
     }
   };
 
   const handleDeleteCategory = () => {
     if (categoryChose) {
       setCategories((prevCategories) =>
-        deleteNode(prevCategories, categoryChose.id)
+        deleteCategory(prevCategories, categoryChose.id)
       );
       handleActionDeleteCategoryModal(false);
     }
@@ -264,11 +282,11 @@ export default function Sidebar(props: ISidebarProps) {
         </p>
       </div>
       <div className="p-3 border-[4px] bg-white  flex-grow">
-        {categories.map((node, index) => (
+        {categories.map((category, index) => (
           <ContentNode
             key={index}
             handleCategory={handleCategory}
-            node={node}
+            category={category}
           />
         ))}
       </div>

@@ -1,12 +1,13 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Utc, NaiveDateTime};
 use serde::{Serialize, Deserialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Category {
     pub id: String,
     pub name: String,
-    pub category_id: String,
-    #[serde(with = "chrono::serde::ts_seconds")]
-    pub created_at: DateTime<Utc>,
+    pub parent_id: Option<String>,
+    // #[serde(with = "chrono::serde::ts_seconds")]
+    pub created_at: NaiveDateTime,
+    pub children: Vec<Category>
 }
 
 #[derive(Debug, Serialize, Deserialize)]

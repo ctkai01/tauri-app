@@ -6,6 +6,9 @@ export interface IHomeProps {}
 export interface Category {
   name: string;
   id: string;
+  parent_id: string;
+  created_at: string;
+  children: Category[]
 }
 export default function Home(props: IHomeProps) {
   const [categoryChose, setCategoryChose] = React.useState<Category | null>(

@@ -2,7 +2,7 @@ use rusqlite::{named_params, Connection};
 use std::fs;
 use tauri::AppHandle;
 
-use crate::model::CreateCategory;
+use crate::model::{Category, CreateCategory};
 
 const CURRENT_DB_VERSION: u32 = 0;
 
@@ -77,10 +77,59 @@ pub fn upgrade_database_if_needed(
 }
 
 pub fn add_category(data: CreateCategory, db: &Connection) -> Result<(), rusqlite::Error> {
-    let mut statement = db.prepare("INSERT INTO categories (id, name, parent_id) VALUES (@id, @name, @category_id)")?;
+    let mut statement = db.prepare(
+        "INSERT INTO categories (id, name, parent_id) VALUES (@id, @name, @category_id)",
+    )?;
     statement.execute(named_params! {"@id": data.id, "@name": data.name,  "@category_id": data.category_id.unwrap_or_default() })?;
 
     Ok(())
+}
+
+pub fn get_all_category(db: &Connection) -> Result<Vec<Category>, rusqlite::Error> {
+    let mut stmt = db.prepare("Select id, name, parent_id, created_at  FROM categories where parent_id = ''")?;
+
+    let category_iter = stmt.query_map([], |row| {
+        Ok(Category {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            parent_id: row.get(2)?,
+            created_at: row.get(3)?,
+            children: Vec::new(),
+        })
+    })?;
+    let mut categories = vec![];
+    for category_result in category_iter {
+        let mut category = category_result?;
+
+        // Query the database for children of the current category
+        let mut children_stmt = db.prepare(
+            "SELECT id, name, parent_id, created_at FROM categories WHERE parent_id = ?",
+        )?;
+        let children_iter = children_stmt.query_map(&[&category.id], |row| {
+            Ok(Category {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                parent_id: row.get(2)?,
+                created_at: row.get(3)?,
+                children: Vec::new(), // Initialize an empty vector for children
+            })
+        })?;
+
+        let mut children = Vec::new();
+        for child_result in children_iter {
+            children.push(child_result?);
+        }
+
+        // Assign children to the current category
+        category.children = children;
+        categories.push(category);
+        // Print the current category and its children
+    }
+
+    // for person in children_iter {
+    //     println!("Found person {:?}", person.unwrap());
+    // }
+    Ok(categories)
 }
 
 pub fn get_all(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {

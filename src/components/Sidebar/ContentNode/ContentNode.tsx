@@ -1,21 +1,23 @@
 import * as React from "react";
 import { AiFillFolder, AiFillFolderOpen } from "react-icons/ai";
-import {  Node } from "../Sidebar";
 import { Category } from "../../../pages/Home";
 
 interface ContentNodeProps {
-  node: Node;
+  category: Category;
   handleCategory?: (category: Category) => void;
 }
 
-const ContentNode: React.FC<ContentNodeProps> = ({ node, handleCategory }) => {
+const ContentNode: React.FC<ContentNodeProps> = ({
+  category,
+  handleCategory,
+}) => {
   const [toggle, setToggle] = React.useState(false);
 
   const handleToggle = () => {
     if (handleCategory) {
-      handleCategory(node.data);
+      handleCategory(category);
     }
-    if (node.children.length) {
+    if (category.children.length) {
       setToggle((toggle) => !toggle);
     }
   };
@@ -31,15 +33,15 @@ const ContentNode: React.FC<ContentNodeProps> = ({ node, handleCategory }) => {
           <AiFillFolder className="mr-1 h-5 w-5 text-[#e23770]" />
         )}
 
-        <span>{node.data.name}</span>
+        <span>{category.name}</span>
       </div>
-      {toggle && node.children && (
+      {toggle && category.children && (
         <div className="pl-2">
-          {node.children.map((child, index) => (
+          {category.children.map((child, index) => (
             <ContentNode
               handleCategory={handleCategory}
               key={index}
-              node={child}
+              category={child}
             />
           ))}
         </div>
