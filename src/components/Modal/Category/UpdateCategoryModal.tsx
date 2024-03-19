@@ -5,14 +5,16 @@ import {
   Flowbite,
   Label,
   Modal,
+  Select,
   TextInput,
 } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { UpdateCategory } from "../../../models";
 import { schemeUpdateCategory } from "../../../validators";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Category } from "../../../pages/Home";
+import { invoke } from "@tauri-apps/api";
 
 export interface IUpdateCategoryModalProps {
   isOpen: boolean;
@@ -33,6 +35,8 @@ const customThemeModal: CustomFlowbiteTheme = {
 
 export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
   const { isOpen, categoryChose, handleModal, handleUpdateCategory } = props;
+
+  const [categoriesMenu, setCategoriesMenu] = useState<Category[]>([]);
   console.log("In: ", categoryChose);
   const {
     register,
@@ -55,6 +59,19 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
       name: categoryChose.name,
     });
   }, [categoryChose]);
+
+  useEffect(() => {
+    const fetchCategoriesAll = async () => {
+      const categoryData: Category[] = await invoke("get_categories_all");
+      const categoriesFilter = categoryData.filter(
+        (category) => category.id !== categoryChose.id
+      );
+      console.log(categoryData);
+      setCategoriesMenu(categoriesFilter);
+    };
+    fetchCategoriesAll();
+  }, []);
+
   const onSubmit = (data: UpdateCategory) => {
     console.log(data);
     handleUpdateCategory(data);
@@ -133,6 +150,42 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
               {errors.name ? (
                 <div className="text-red-500 text-sm mt-1">
                   <span>{errors.name.message}</span>
+                </div>
+              ) : (
+                <></>
+              )}
+            </div>
+            <div className=" mb-4">
+              <div className="flex items-center">
+                <div className="mb-2 min-w-[115px]">
+                  <Label
+                    htmlFor="parent_id"
+                    className=" block"
+                    value="Nhóm mẹ"
+                  />
+                </div>
+                <Select
+                  id="parent_id"
+                  color={errors.category_id ? "failure" : ""}
+                  className="w-full"
+                  {...register("category_id")}
+                >
+                  {categoriesMenu.map((category) => {
+                    return (
+                      <option
+                        selected={category.parent_id === category.id}
+                        value={category.id}
+                      >
+                        {category.name}
+                      </option>
+                    );
+                  })}
+                </Select>
+              </div>
+
+              {errors.category_id ? (
+                <div className="text-red-500 text-sm mt-1">
+                  <span>{errors.category_id.message}</span>
                 </div>
               ) : (
                 <></>

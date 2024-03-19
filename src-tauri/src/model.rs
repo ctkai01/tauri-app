@@ -16,3 +16,11 @@ pub struct CreateCategory {
     pub name: String,
     pub category_id: Option<String>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateCategory {
+    pub id_old: String,
+    pub id: String,
+    pub name: String,
+    pub category_id: Option<String>,
+}

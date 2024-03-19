@@ -258,20 +258,21 @@ export default function Sidebar(props: ISidebarProps) {
         handleModal={handleActionAddCategoryModal}
         handleAddCategory={handleAddCategory}
       />
-      {categoryChose && (
-        <>
-          <UpdateCategoryModal
-            isOpen={openUpdateCategoryModal}
-            categoryChose={categoryChose}
-            handleModal={handleActionUpdateCategoryModal}
-            handleUpdateCategory={handleUpdateCategory}
-          />
-          <DeleteCategoryModal
-            isOpen={openDeleteCategoryModal}
-            handleModal={handleActionDeleteCategoryModal}
-            handleDeleteCategory={handleDeleteCategory}
-          />
-        </>
+      {categoryChose && openUpdateCategoryModal && (
+        <UpdateCategoryModal
+          isOpen={openUpdateCategoryModal}
+          categoryChose={categoryChose}
+          handleModal={handleActionUpdateCategoryModal}
+          handleUpdateCategory={handleUpdateCategory}
+        />
+      )}
+
+      {categoryChose && openDeleteCategoryModal && (
+        <DeleteCategoryModal
+          isOpen={openDeleteCategoryModal}
+          handleModal={handleActionDeleteCategoryModal}
+          handleDeleteCategory={handleDeleteCategory}
+        />
       )}
 
       <div className="p-2 text-xs h-16">

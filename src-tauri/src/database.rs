@@ -2,7 +2,7 @@ use rusqlite::{named_params, Connection};
 use std::fs;
 use tauri::AppHandle;
 
-use crate::model::{Category, CreateCategory};
+use crate::model::{Category, CreateCategory, UpdateCategory};
 
 const CURRENT_DB_VERSION: u32 = 0;
 
@@ -85,7 +85,16 @@ pub fn add_category(data: CreateCategory, db: &Connection) -> Result<(), rusqlit
     Ok(())
 }
 
-pub fn get_all_category(db: &Connection) -> Result<Vec<Category>, rusqlite::Error> {
+pub fn update_category(data: UpdateCategory, db: &Connection) -> Result<(), rusqlite::Error> {
+     let mut statement = db.prepare(
+        "UPDATE categories SET id = @new_id name = @name, parent_id = @category_id WHERE id = @id",
+    )?;
+    statement.execute(named_params! {"@new_id": data.id, "@name": data.name,  "@category_id": data.category_id.unwrap_or_default(), "@id": data.id_old })?;
+
+    Ok(())
+}
+
+pub fn get_all_category_root(db: &Connection) -> Result<Vec<Category>, rusqlite::Error> {
     let mut stmt = db.prepare("Select id, name, parent_id, created_at  FROM categories where parent_id = ''")?;
 
     let category_iter = stmt.query_map([], |row| {
@@ -132,15 +141,37 @@ pub fn get_all_category(db: &Connection) -> Result<Vec<Category>, rusqlite::Erro
     Ok(categories)
 }
 
-pub fn get_all(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {
-    let mut statement = db.prepare("SELECT * FROM items")?;
-    let mut rows = statement.query([])?;
-    let mut items = Vec::new();
-    while let Some(row) = rows.next()? {
-        let title: String = row.get("title")?;
+pub fn get_all_category(db: &Connection) -> Result<Vec<Category>, rusqlite::Error> {
+    let mut stmt = db.prepare("Select id, name, parent_id, created_at  FROM categories")?;
 
-        items.push(title);
+    let category_iter = stmt.query_map([], |row| {
+        Ok(Category {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            parent_id: row.get(2)?,
+            created_at: row.get(3)?,
+            children: Vec::new(),
+        })
+    })?;
+    let mut categories = vec![];
+    for category_result in category_iter {
+        let mut category = category_result?;
+        categories.push(category);
     }
 
-    Ok(items)
+    Ok(categories)
 }
+
+
+// pub fn get_all(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {
+//     let mut statement = db.prepare("SELECT * FROM items")?;
+//     let mut rows = statement.query([])?;
+//     let mut items = Vec::new();
+//     while let Some(row) = rows.next()? {
+//         let title: String = row.get("title")?;
+
+//         items.push(title);
+//     }
+
+//     Ok(items)
+// }

@@ -6,6 +6,7 @@ export interface CreateCategory {
 export interface UpdateCategory {
   id?: string;
   name?: string;
+  category_id?: string;
 }
 
 export interface UpdateAvatar {
