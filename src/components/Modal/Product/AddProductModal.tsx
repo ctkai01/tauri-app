@@ -22,6 +22,7 @@ export interface IAddProductModalProps {
   isOpen: boolean;
   categoryChose: Category | null;
   handleModal: (state: boolean) => void;
+  handleAddProduct: (createProduct: CreateProduct) => void;
   // handleAddCategory: (data: CreateCategory) => void;
 }
 
@@ -35,7 +36,7 @@ const customThemeModal: CustomFlowbiteTheme = {
 };
 
 export default function AddProductModal(props: IAddProductModalProps) {
-  const { isOpen, categoryChose, handleModal } = props;
+  const { isOpen, categoryChose, handleModal, handleAddProduct } = props;
   const [imageFile, setImageFile] = useState<File | undefined>(undefined);
   const [imagePreview, setImagePreview] = useState("");
   const [totalWeight, setTotalWeight] = useState("");
@@ -72,7 +73,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
     }
   }, [goldWeight, stoneWeight]);
   const onSubmit = (data: CreateProduct) => {
-    console.log(data);
+    handleAddProduct(data)
     // handleAddCategory(data);
     // reset();
     // toast(<div className="font-bold">Thêm mới nhóm hàng thành công</div>, {
@@ -375,6 +376,9 @@ export default function AddProductModal(props: IAddProductModalProps) {
                     render={({ field }) => (
                       <NumericFormat
                         customInput={TextInput}
+                        // customInput={(props: {}) => (
+                        //   <TextInput {...props} className="w-full" color={""} />
+                        // )}
                         thousandSeparator={true}
                         allowNegative={false}
                         prefix={""}
@@ -411,6 +415,9 @@ export default function AddProductModal(props: IAddProductModalProps) {
                     render={({ field }) => (
                       <NumericFormat
                         customInput={TextInput}
+                        // customInput={(props: {}) => (
+                        //   <TextInput {...props} className="w-full" color={""} />
+                        // )}
                         thousandSeparator={true}
                         allowNegative={false}
                         prefix={""}

@@ -5,10 +5,11 @@ import HomeAction from "../components/Home/HomeAction";
 export interface IHomeProps {}
 export interface Category {
   name: string;
-  id: string;
-  parent_id: string;
+  id: number;
+  code: string;
+  parent_id: number;
   created_at: string;
-  children: Category[]
+  children: Category[];
 }
 export default function Home(props: IHomeProps) {
   const [categoryChose, setCategoryChose] = React.useState<Category | null>(

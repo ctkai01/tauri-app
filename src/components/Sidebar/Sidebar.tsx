@@ -8,7 +8,9 @@ import ContentNode from "./ContentNode/ContentNode";
 import {
   CreateCategory,
   CreateCategoryToServer,
+  DeleteCategoryToServer,
   UpdateCategory,
+  UpdateCategoryToServer,
 } from "../../models";
 import UpdateCategoryModal from "../Modal/Category/UpdateCategoryModal";
 import { toast } from "react-toastify";
@@ -73,13 +75,13 @@ export default function Sidebar(props: ISidebarProps) {
   const [categories, setCategories] = React.useState<Category[]>([]);
 
   React.useEffect(() => {
-    const fetchCategories = async() => {
+    const fetchCategories = async () => {
       const categoryData: Category[] = await invoke("get_categories");
-      console.log(categoryData);
+      // console.log(categoryData);
       setCategories(categoryData);
-    }
-    fetchCategories()
-  }, [])
+    };
+    fetchCategories();
+  }, []);
 
   const [openAddCategoryModal, setOpenAddCategoryModal] = React.useState(false);
   const [openUpdateCategoryModal, setOpenUpdateCategoryModal] =
@@ -105,11 +107,11 @@ export default function Sidebar(props: ISidebarProps) {
   };
 
   const addCategoryToChildren = (
-    parentId: string,
+    parentId: number | null,
     newCategory: Category,
     categories: Category[]
   ): Category[] => {
-    if (!parentId || parentId === "") {
+    if (!parentId) {
       return [...categories, newCategory]; // Add newNode to the root
     }
     return categories.map((category) => {
@@ -121,7 +123,11 @@ export default function Sidebar(props: ISidebarProps) {
       } else if (category.children.length > 0) {
         return {
           ...category,
-          children: addCategoryToChildren(parentId, newCategory, category.children),
+          children: addCategoryToChildren(
+            parentId,
+            newCategory,
+            category.children
+          ),
         };
       }
       return category;
@@ -130,7 +136,7 @@ export default function Sidebar(props: ISidebarProps) {
 
   const deleteCategory = (
     categories: Category[],
-    idToDelete: string
+    idToDelete: number
   ): Category[] => {
     return categories.reduce((acc: Category[], category: Category) => {
       // Check if the current node's ID matches the ID to delete
@@ -152,7 +158,7 @@ export default function Sidebar(props: ISidebarProps) {
   };
 
   React.useEffect(() => {
-    console.log("catch");
+    // console.log("catch");
     if (
       !categoryChose &&
       (openUpdateCategoryModal || openDeleteCategoryModal)
@@ -167,49 +173,56 @@ export default function Sidebar(props: ISidebarProps) {
     }
   }, [categoryChose, openUpdateCategoryModal, openDeleteCategoryModal]);
 
-  function updateCategory(
-    categories: Category[],
-    id: string,
-    updatedCategory: UpdateCategory
-  ): Category[] {
-    return categories.map((c) => {
-      if (c.id === id) {
-        // If the current node matches the ID, update its data
-        return { ...c, ...updatedCategory };
-      } else if (c.children.length > 0) {
-        // If the current node has children, recursively update them
-        return {
-          ...c,
-          children: updateCategory(c.children, id, updatedCategory),
-        };
-      } else {
-        // If the current node does not match the ID and has no children, return it unchanged
-        return c;
-      }
-    });
-  }
+  // function updateCategory(
+  //   categories: Category[],
+  //   id: number,
+  //   updatedCategory: UpdateCategory
+  // ): Category[] {
+  //   return categories.map((c) => {
+  //     if (c.id === id) {
+  //       // If the current node matches the ID, update its data
+  //       return { ...c, ...updatedCategory };
+  //     } else if (c.children.length > 0) {
+  //       // If the current node has children, recursively update them
+  //       return {
+  //         ...c,
+  //         children: updateCategory(c.children, id, updatedCategory),
+  //       };
+  //     } else {
+  //       // If the current node does not match the ID and has no children, return it unchanged
+  //       return c;
+  //     }
+  //   });
+  // }
+
   console.log("categoryChose: ", categoryChose);
-  const handleAddCategory = (data: CreateCategory) => {
+  const handleAddCategory = async (data: CreateCategory) => {
     try {
-      const newID = `${categoryChose ? categoryChose.id : ""}${data.id}`;
-      console.log("New ID: ", newID);
-      console.log("data.id ", data.id);
-      const parentID = categoryChose ? categoryChose.id : "";
+      // const newID = `${categoryChose ? categoryChose.id : ""}${data.code}`;
+      // console.log("New ID: ", newID);
+      // console.log("data.id ", data.code);
+      const parentID = categoryChose ? categoryChose.id : null;
 
       const dataSend: CreateCategoryToServer = {
-        category_id: categoryChose ? categoryChose.id : null,
-        id: newID,
+        parent_id: categoryChose ? categoryChose.id : 0,
+        code: data.code,
         name: data.name,
       };
       const now = new Date();
 
       // Format the current date and time as a string
-      const formattedDateTime = now.toISOString().replace('T', ' ').slice(0, 19);
-      invoke("create_category", { data: JSON.stringify(dataSend) });
+      const formattedDateTime = now
+        .toISOString()
+        .replace("T", " ")
+        .slice(0, 19);
+      let newID: number = await invoke("create_category", {
+        data: JSON.stringify(dataSend),
+      });
       const newCategory: Category = {
         id: newID,
         name: data.name,
         parent_id: parentID,
+        code: data.code,
         created_at: formattedDateTime,
         children: [],
       };
@@ -218,38 +231,110 @@ export default function Sidebar(props: ISidebarProps) {
         newCategory,
         categories
       );
+      handleSetCategoryChose(null);
       setCategories(updatedCategories);
     } catch (err: any) {
       console.log("Error:", err);
     }
   };
 
-  const handleUpdateCategory = (data: UpdateCategory) => {
-    if (categoryChose) {
-      const updatedCategory: UpdateCategory = {
-        id: data.id ? data.id : categoryChose?.id,
-        name: data.name ? data.name : categoryChose?.name,
-      };
+  // const updateCategory = (categories: Category[], updateData: UpdateCategory) => {
 
-      console.log("updatedCategory: ", updatedCategory);
-      const updatedCategories = updateCategory(
-        categories,
-        categoryChose.id,
-        updatedCategory
-      );
-      setCategories(updatedCategories);
-      // handleSetCategoryChose(updatedCategory);
+  //     // Map over the categories array to update the target category
+  //     const updatedCategories = categories.map((category) => {
+  //       if (category.id === updateData.id) {
+  //         // Update the target category with the updated data
+  //         return { ...category, ...updateData };
+  //       }
+
+  //       if (category.children.length) {
+  //         updateCategory(category.children, updateData);
+  //       }
+  //       return category;
+  //     });
+
+  //     console.log("Update in: ", updatedCategories);
+  //     return updatedCategories;
+  //     // Update the children of the parent category if parent_id has changed
+  //     // if (updateData.parent_id !== undefined && updateData.parent_id !== null) {
+  //     //   return updatedCategories.map((category) => {
+  //     //     if (category.id === updateData.parent_id) {
+  //     //       // Add the updated category as a child to the parent category
+  //     //       category.children.push({
+  //     //         ...updateData,
+  //     //         created_at: category.created_at,
+  //     //         children: [],
+  //     //       });
+  //     //     }
+  //     //     return category;
+  //     //   });
+  //     // }
+  // };
+
+  const handleUpdateCategory = async (data: UpdateCategory) => {
+    try {
+      if (categoryChose) {
+        const updatedCategory: UpdateCategory = {
+          id: categoryChose.id,
+          code: data.code,
+          name: data.name ? data.name : categoryChose?.name,
+          parent_id: data.parent_id,
+        };
+
+        console.log("updatedCategory: ", updatedCategory);
+        // updateCategory(categories, updatedCategory);
+        // const updatedCategories = updateCategory(
+        //   categories,
+        //   categoryChose.id,
+        //   updatedCategory
+        // );
+
+        // console.log("updatedCategories 1: ", updatedCategories);
+        const dataUpdate: UpdateCategoryToServer = {
+          code: data.code,
+          parent_id: data.parent_id ? data.parent_id : 0,
+          id: data.id ? data.id : categoryChose?.id,
+          name: data.name ? data.name : categoryChose?.name,
+        };
+        await invoke("update_category", { data: JSON.stringify(dataUpdate) });
+        // setCategories(updatedCategories);
+        const categoryData: Category[] = await invoke("get_categories");
+        setCategories(categoryData);
+        handleSetCategoryChose(null);
+        toast(<div className="font-bold">Cập nhật nhóm hàng thành công</div>, {
+          draggable: false,
+          position: "top-right",
+          type: "success",
+        });
+      }
+    } catch (err) {
+      toast(<div className="font-bold">Có lỗi cập nhật</div>, {
+        draggable: false,
+        position: "top-right",
+        type: "error",
+      });
     }
   };
 
-  const handleDeleteCategory = () => {
+  const handleDeleteCategory = async() => {
     if (categoryChose) {
-      setCategories((prevCategories) =>
-        deleteCategory(prevCategories, categoryChose.id)
-      );
+      const dataDelete: DeleteCategoryToServer = {
+       id: categoryChose.id
+      };
+      await invoke("delete_category", {
+        data: JSON.stringify(dataDelete),
+      });
+      const categoryData: Category[] = await invoke("get_categories");
+      setCategories(categoryData);
+      // setCategories((prevCategories) =>
+      //   deleteCategory(prevCategories, categoryChose.id)
+      // );
+      handleSetCategoryChose(null);
       handleActionDeleteCategoryModal(false);
     }
   };
+
+  // console.log("Categories: ", categories);
   return (
     <div className="flex flex-col h-full">
       <AddCategoryModal
@@ -325,13 +410,13 @@ export default function Sidebar(props: ISidebarProps) {
           <Button
             className="mr-1"
             color="dark"
-            // onClick={() => handleSetCategoryChose(null)}
-            onClick={async () => {
-              console.log("hey");
-              await invoke("greet", {
-                name: "Nam",
-              });
-            }}
+            onClick={() => handleSetCategoryChose(null)}
+            // onClick={async () => {
+            //   console.log("hey");
+            //   await invoke("greet", {
+            //     name: "Nam",
+            //   });
+            // }}
           >
             <GrPowerReset />
           </Button>

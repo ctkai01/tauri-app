@@ -37,7 +37,7 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
   const { isOpen, categoryChose, handleModal, handleUpdateCategory } = props;
 
   const [categoriesMenu, setCategoriesMenu] = useState<Category[]>([]);
-  console.log("In: ", categoryChose);
+  // console.log("categoriesMenu: ", categoriesMenu);
   const {
     register,
     handleSubmit,
@@ -50,15 +50,19 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
     defaultValues: {
       id: categoryChose.id,
       name: categoryChose.name,
+      code: categoryChose.code,
+      parent_id: categoryChose.parent_id,
     },
   });
-
-  useEffect(() => {
-    reset({
-      id: categoryChose.id,
-      name: categoryChose.name,
-    });
-  }, [categoryChose]);
+  // console.log("Update this: ", categoryChose);
+  // console.log("Update watch: ", watch());
+  // useEffect(() => {
+  //   reset({
+  //     id: categoryChose.id,
+  //     code: categoryChose.code,
+  //     name: categoryChose.name,
+  //   });
+  // }, [categoryChose]);
 
   useEffect(() => {
     const fetchCategoriesAll = async () => {
@@ -66,25 +70,20 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
       const categoriesFilter = categoryData.filter(
         (category) => category.id !== categoryChose.id
       );
-      console.log(categoryData);
+      // console.log(categoryData);
       setCategoriesMenu(categoriesFilter);
     };
     fetchCategoriesAll();
   }, []);
 
   const onSubmit = (data: UpdateCategory) => {
-    console.log(data);
+    console.log("UpdateCategory in: ", data);
     handleUpdateCategory(data);
     reset();
-    toast(<div className="font-bold">Cập nhật nhóm hàng thành công</div>, {
-      draggable: false,
-      position: "top-right",
-      type: "success",
-    });
 
     handleModal(false);
   };
-  console.log(watch("name"));
+  console.log(watch());
   return (
     <Flowbite theme={{ theme: customThemeModal }}>
       <Modal
@@ -106,23 +105,23 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
               <div className="flex items-center ">
                 <div className="mb-2 min-w-[115px]">
                   <Label
-                    htmlFor="category_id"
+                    htmlFor="code"
                     className=" block"
                     value="Mã nhóm hàng"
                   />
                 </div>
                 <TextInput
-                  id="category_id"
+                  id="code"
                   type="text"
                   placeholder=""
                   className="flex-1"
-                  color={errors.id ? "failure" : ""}
-                  {...register("id")}
+                  color={errors.code ? "failure" : ""}
+                  {...register("code")}
                 />
               </div>
-              {errors.id ? (
+              {errors.code ? (
                 <div className="text-red-500 text-sm mt-1">
-                  <span>{errors.id.message}</span>
+                  <span>{errors.code.message}</span>
                 </div>
               ) : (
                 <></>
@@ -166,14 +165,15 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
                 </div>
                 <Select
                   id="parent_id"
-                  color={errors.category_id ? "failure" : ""}
+                  color={errors.parent_id ? "failure" : ""}
                   className="w-full"
-                  {...register("category_id")}
+                  {...register("parent_id")}
                 >
+                  <option value="0"></option>
                   {categoriesMenu.map((category) => {
                     return (
                       <option
-                        selected={category.parent_id === category.id}
+                        selected={categoryChose.parent_id === category.id}
                         value={category.id}
                       >
                         {category.name}
@@ -183,9 +183,9 @@ export default function UpdateCategoryModal(props: IUpdateCategoryModalProps) {
                 </Select>
               </div>
 
-              {errors.category_id ? (
+              {errors.parent_id ? (
                 <div className="text-red-500 text-sm mt-1">
-                  <span>{errors.category_id.message}</span>
+                  <span>{errors.parent_id.message}</span>
                 </div>
               ) : (
                 <></>

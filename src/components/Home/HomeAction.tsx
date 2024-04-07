@@ -4,6 +4,7 @@ import { FaPlus } from "react-icons/fa";
 import AddProductModal from "../Modal/Product/AddProductModal";
 import TableContent from "./TableContent";
 import { Category } from "../../pages/Home";
+import { CreateProduct, Product } from "../../models";
 
 export interface IHomeActionProps {
   categoryChose: Category | null;
@@ -11,10 +12,16 @@ export interface IHomeActionProps {
 
 export default function HomeAction(props: IHomeActionProps) {
   const { categoryChose  } = props;
+  const [products, setProducts] = React.useState<Product[]>()
   const [openAddProductModal, setOpenAddProductModal] = React.useState(false);
   function handleActionAddProductModal(state: boolean) {
     setOpenAddProductModal(state);
   }
+
+  const handleAddProduct = (createProduct: CreateProduct) => {
+    // Add to DB
+    // Update
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -22,6 +29,7 @@ export default function HomeAction(props: IHomeActionProps) {
         <AddProductModal
           isOpen={openAddProductModal}
           categoryChose={categoryChose}
+          handleAddProduct={handleAddProduct}
           handleModal={handleActionAddProductModal}
         />
       )}

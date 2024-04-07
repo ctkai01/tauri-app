@@ -1,12 +1,13 @@
 export interface CreateCategory {
-  id: string;
+  code: string;
   name: string;
 }
 
 export interface UpdateCategory {
-  id?: string;
-  name?: string;
-  category_id?: string;
+  id: number;
+  name: string;
+  code: string;
+  parent_id: number;
 }
 
 export interface UpdateAvatar {
@@ -15,7 +16,19 @@ export interface UpdateAvatar {
 
 
 export interface CreateCategoryToServer {
-  id: string;
+  code: string;
   name: string;
-  category_id: string | null;
+  parent_id: number;
+}
+
+
+export interface UpdateCategoryToServer {
+  id: number;
+  code: string;
+  name: string;
+  parent_id: number;
+}
+
+export interface DeleteCategoryToServer {
+  id: number;
 }

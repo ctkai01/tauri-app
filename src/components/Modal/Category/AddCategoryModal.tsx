@@ -41,7 +41,7 @@ export default function AddCategoryModal(props: IAddCategoryModalProps) {
     resolver: yupResolver(schemeCreateCategory),
   });
   const onSubmit = (data: CreateCategory) => {
-    console.log(data);
+    // console.log(data);
     handleAddCategory(data);
     reset();
     toast(<div className="font-bold">Thêm mới nhóm hàng thành công</div>, {
@@ -69,35 +69,28 @@ export default function AddCategoryModal(props: IAddCategoryModalProps) {
             onSubmit={handleSubmit(onSubmit)}
             className=" max-w-md flex-col gap-4"
           >
-            <div className="mb-4">
-              <div className="flex items-center ">
+            <div className=" mb-4">
+              <div className="flex items-center">
                 <div className="mb-2 min-w-[115px]">
                   <Label
-                    htmlFor="category_id"
+                    htmlFor="name_category"
                     className=" block"
                     value="Mã nhóm hàng"
                   />
                 </div>
-                <div className="flex items-center">
-                  <TextInput
-                    type="text"
-                    className="flex-1"
-                    disabled
-                    placeholder={categoryChose ? categoryChose.id : ""}
-                  />
-                  <span className="mx-1">+</span>
-                  <TextInput
-                    id="category_id"
-                    type="text"
-                    className="flex-1"
-                    color={errors.id ? "failure" : ""}
-                    {...register("id")}
-                  />
-                </div>
+                <TextInput
+                  id="name_category"
+                  type="text"
+                  placeholder=""
+                  className="flex-1"
+                  color={errors.code ? "failure" : ""}
+                  {...register("code")}
+                />
               </div>
-              {errors.id ? (
+
+              {errors.code ? (
                 <div className="text-red-500 text-sm mt-1">
-                  <span>{errors.id.message}</span>
+                  <span>{errors.code.message}</span>
                 </div>
               ) : (
                 <></>
@@ -130,18 +123,18 @@ export default function AddCategoryModal(props: IAddCategoryModalProps) {
                 <></>
               )}
             </div>
-            <div className="flex items-center mb-4">
+            {/* <div className="flex items-center mb-4">
               <div className="mb-2 min-w-[115px]">
                 <Label htmlFor="parent_id" className=" block" value="Nhóm mẹ" />
               </div>
               <TextInput
                 id="parent_id"
                 type="text"
-                placeholder={categoryChose ? categoryChose.id : ""}
+                placeholder={categoryChose ? categoryChose.code : ""}
                 className="flex-1"
                 disabled
               />
-            </div>
+            </div> */}
             <div className="flex text-xs justify-center gap-4 mt-3">
               <Button size="sm" color="success" type="submit">
                 Thêm
