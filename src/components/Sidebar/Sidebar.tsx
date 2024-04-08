@@ -201,7 +201,7 @@ export default function Sidebar(props: ISidebarProps) {
       // const newID = `${categoryChose ? categoryChose.id : ""}${data.code}`;
       // console.log("New ID: ", newID);
       // console.log("data.id ", data.code);
-      const parentID = categoryChose ? categoryChose.id : null;
+      const parentID = categoryChose ? categoryChose.id : 0;
 
       const dataSend: CreateCategoryToServer = {
         parent_id: categoryChose ? categoryChose.id : 0,

@@ -19,14 +19,14 @@ export const schemeCreateProduct: Yup.ObjectSchema<CreateProduct> = Yup.object({
   goldWeight: Yup.string(),
   goldAge: Yup.string(),
   stoneWeight: Yup.string(),
-  categoryID: Yup.number(),
+  categoryID: Yup.number()
+    .positive("Nhóm hàng là bắt buộc")
+    .required("Nhóm hàng là bắt buộc"),
   wage: Yup.string(),
   stonePrice: Yup.string(),
   quantity: Yup.string().required("Số lượng là bắt buộc"),
   price: Yup.string(),
-  note: Yup.string()
-    .min(1, "Ghi chú nhỏ hơn 1 ký tự")
-    .max(50, "Ghi chú lớn hơn 30 ký tự"),
+  note: Yup.string().optional().max(50, "Ghi chú lớn hơn 50 ký tự"),
 });
 
 

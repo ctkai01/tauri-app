@@ -2,7 +2,7 @@ use rusqlite::{named_params, Connection};
 use std::fs;
 use tauri::AppHandle;
 
-use crate::model::{Category, CreateCategory, DeleteCategory, UpdateCategory, CreateProduct};
+use crate::model::{Category, CreateCategory, CreateProduct, DeleteCategory, GetProductsByCategory, Product, UpdateCategory};
 
 const CURRENT_DB_VERSION: u32 = 1;
 
@@ -14,7 +14,7 @@ pub fn initialize_database(app_handle: &AppHandle) -> Result<Connection, rusqlit
         .app_data_dir()
         .expect("The app data directory should exist.");
     fs::create_dir_all(&app_dir).expect("The app data directory should be created.");
-    let sqlite_path = app_dir.join("Gold3.sqlite");
+    let sqlite_path = app_dir.join("Gold5.sqlite");
 
     let mut db = Connection::open(sqlite_path)?;
 
@@ -56,16 +56,16 @@ pub fn upgrade_database_if_needed(
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         unit TEXT NOT NULL,
-        category_id TEXT,
+        category_id INTEGER NOT NULL,
         image TEXT,
-        gold_weight REAL,
+        gold_weight TEXT,
         note TEXT,
-        age_gold INTEGER,
-        stone_weight REAL,
-        total_weight REAL,
-        wage REAL,
-        stone_price REAL,
-        price REAL,
+        age_gold TEXT,
+        stone_weight TEXT,
+        total_weight TEXT,
+        wage TEXT,
+        stone_price TEXT,
+        price TEXT,
         quantity INTEGER NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -96,14 +96,28 @@ pub fn add_category(data: CreateCategory, db: &Connection) -> Result<i64, rusqli
     Ok(id)
 }
 
-pub fn add_product(data: CreateProduct, db: &Connection) -> Result<i64, rusqlite::Error> {
+pub fn add_product(
+    data: CreateProduct,
+    image_path: String,
+    db: &Connection,
+) -> Result<i64, rusqlite::Error> {
     let mut statement = db.prepare(
-        "INSERT INTO products (name, unit, category_id, image, gold_weight, note, age_gold, stone_weight, total_weight, wage, stone_price, price, quantity) VALUES (@name, @unit, @category_id, @image, gold_weight, note, age_gold, stone_weight, total_weight, wage, stone_price, price, quantity)",
+        "INSERT INTO products (name, unit, category_id, image, gold_weight, note, age_gold, stone_weight, total_weight, wage, stone_price, price, quantity) VALUES (@name, @unit, @category_id, @image, @gold_weight, @note, @age_gold, @stone_weight, @total_weight, @wage, @stone_price, @price, @quantity)",
     )?;
     statement.execute(named_params! {
         "@name": data.name,
-        "@parent_id": data.parent_id.unwrap_or_default(),
-        "@code": data.code,
+        "@unit": data.unit,
+        "@category_id": data.category_id,
+        "@image": image_path,
+        "@gold_weight": data.gold_weight.unwrap_or_default(),
+        "@note": data.note.unwrap_or_default(),
+        "@age_gold": data.gold_age.unwrap_or_default(),
+        "@stone_weight": data.stone_weight.unwrap_or_default(),
+        "@total_weight": data.total_weight,
+        "@wage": data.wage.unwrap_or_default(),
+        "@stone_price": data.stone_price.unwrap_or_default(),
+        "@price": data.price,
+        "@quantity": data.quantity,
     })?;
 
     // Retrieve the ID of the last inserted row
@@ -202,8 +216,8 @@ fn get_categories(db: &Connection, id: i64) -> Result<Vec<Category>, rusqlite::E
 
     let mut categories = vec![];
     for category_result in category_iter {
-        let  mut category = category_result?;
-            println!("categories result: {:?}", category);
+        let mut category = category_result?;
+        println!("categories result: {:?}", category);
 
         if category.parent_id.is_some() {
             category.children = get_categories(db, category.id)?
@@ -233,6 +247,38 @@ pub fn get_all_category(db: &Connection) -> Result<Vec<Category>, rusqlite::Erro
     }
     println!("categories: {:?}", categories);
     Ok(categories)
+}
+
+pub fn get_products_by_category_id_paginate(db: &Connection, get_category_data: GetProductsByCategory) -> Result<Vec<Product>, rusqlite::Error> {
+    let mut stmt = db.prepare("Select *  FROM products WHERE category_id = ?")?;
+
+    let products_iter = stmt.query_map([&get_category_data.category_id], |row| {
+        Ok(Product {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            unit: row.get(2)?,
+            category_id: row.get(3)?,
+            image: row.get(4)?,
+            gold_weight: row.get(5)?,
+            note: row.get(6)?,
+            gold_age: row.get(7)?,
+            stone_weight: row.get(8)?,
+            total_weight: row.get(9)?,
+            wage: row.get(10)?,
+            stone_price: row.get(11)?,
+            price: row.get(12)?,
+            quantity: row.get(13)?,
+            created_at: row.get(14)?,
+            updated_at: row.get(15)?,
+        })
+    })?;
+    let mut products = vec![];
+    for product_result in products_iter {
+        let product = product_result?;
+        products.push(product);
+    }
+    println!("categories: {:?}", products);
+    Ok(products)
 }
 
 // pub fn get_all(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {

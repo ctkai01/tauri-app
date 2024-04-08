@@ -8,23 +8,26 @@ export interface CreateProduct {
   wage?: string;
   stonePrice?: string;
   price?: string;
-  quantity: number;
+  quantity: string;
   categoryID: number;
 }
 
 export interface Product {
-  id: string;
+  id: number;
   name: string;
   unit: string;
   goldWeight?: string;
   goldAge?: string;
-  stoneWeight?: string;
+  stone_weight?: string;
   note?: string;
   wage?: string;
-  stonePrice?: string;
+  stone_price?: string;
+  image?: string;
   price?: string;
+  total_weight: string;
   quantity: number;
-  categoryID: number;
-  createdAt?: string;
+  category_id: number;
+  updated_at?: string;
+  created_at?: string;
 }
 

@@ -18,11 +18,17 @@ import { ValidationError } from "yup";
 import { CreateProduct, UpdateAvatar } from "../../../models";
 import { Category } from "../../../pages/Home";
 import { schemeCreateProduct, schemeUpdateImage } from "../../../validators";
+import { invoke } from "@tauri-apps/api";
+import { fileToArrayBuffer } from "../../../utils";
 export interface IAddProductModalProps {
   isOpen: boolean;
   categoryChose: Category | null;
   handleModal: (state: boolean) => void;
-  handleAddProduct: (createProduct: CreateProduct) => void;
+  handleAddProduct: (
+    createProduct: CreateProduct,
+    imageFile: File | undefined,
+    totalWeight: string
+  ) => void;
   // handleAddCategory: (data: CreateCategory) => void;
 }
 
@@ -42,6 +48,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
   const [totalWeight, setTotalWeight] = useState("");
   const inputImageRef = useRef<HTMLInputElement>(null);
   const [errorImage, setErrorImage] = useState("");
+  const [categoriesMenu, setCategoriesMenu] = useState<Category[]>([]);
 
   const {
     register,
@@ -61,6 +68,15 @@ export default function AddProductModal(props: IAddProductModalProps) {
   });
   const goldWeight = watch("goldWeight") || "";
   const stoneWeight = watch("stoneWeight") || "";
+
+  useEffect(() => {
+    const fetchCategoriesAll = async () => {
+      const categoriesData: Category[] = await invoke("get_categories_all");
+   
+      setCategoriesMenu(categoriesData);
+    };
+    fetchCategoriesAll();
+  }, []);
   useEffect(() => {
     const goldWeightNum = parseFloat(goldWeight);
     const stoneWeightNum = parseFloat(stoneWeight);
@@ -72,8 +88,9 @@ export default function AddProductModal(props: IAddProductModalProps) {
       setTotalWeight("");
     }
   }, [goldWeight, stoneWeight]);
-  const onSubmit = (data: CreateProduct) => {
-    handleAddProduct(data)
+
+  const onSubmit = async (data: CreateProduct) => {
+    handleAddProduct(data, imageFile, totalWeight);
     // handleAddCategory(data);
     // reset();
     // toast(<div className="font-bold">Thêm mới nhóm hàng thành công</div>, {
@@ -122,7 +139,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
   return (
     <Flowbite theme={{ theme: customThemeModal }}>
       <Modal
-        dismissible
+        // dismissible
         show={isOpen}
         size="xl"
         onClose={() => handleModal(false)}
@@ -203,10 +220,16 @@ export default function AddProductModal(props: IAddProductModalProps) {
                     color={errors.name ? "failure" : ""}
                     className="w-full"
                   >
-                    <option value={1}>United States</option>
-                    <option value={2}>Canada</option>
-                    <option value={3}>France</option>
-                    <option value={4}>Germany</option>
+                    <option value="0"></option>
+                    {categoriesMenu.map((category) => {
+                      return (
+                        <option
+                          value={category.id}
+                        >
+                          {category.name}
+                        </option>
+                      );
+                    })}
                   </Select>
                 </div>
 
