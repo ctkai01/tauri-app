@@ -76,10 +76,9 @@ fn get_categories(app_handle: AppHandle) -> Result<Vec<Category>, String> {
 }
 
 #[tauri::command]
-fn get_categories_all(config: tauri::Config, app_handle: AppHandle) -> Result<Vec<Category>, String> {
+fn get_categories_all(app_handle: AppHandle) -> Result<Vec<Category>, String> {
     // Should handle errors instead of unwrapping here
     // let create_category: CreateCategory = serde_json::from_str(&data).map_err(|e| e.to_string())?;
-    println!("config: {:?}", config);
     let categories = app_handle.db(|db| database::get_all_category(db)).unwrap();
     
     // let items = app_handle.db(|db| database::get_all(db)).unwrap();

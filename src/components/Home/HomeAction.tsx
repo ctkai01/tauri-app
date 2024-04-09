@@ -2,10 +2,12 @@ import { invoke } from "@tauri-apps/api";
 import { Button, Tooltip } from "flowbite-react";
 import * as React from "react";
 import { FaPlus } from "react-icons/fa";
+import { toast } from "react-toastify";
 import { CreateProduct, Product } from "../../models";
 import { Category } from "../../pages/Home";
 import { fileToArrayBuffer } from "../../utils";
 import AddProductModal from "../Modal/Product/AddProductModal";
+import InfoProductModal from "../Modal/Product/InfoProductModal";
 import TableContent from "./TableContent";
 
 export interface IHomeActionProps {
@@ -15,9 +17,16 @@ export interface IHomeActionProps {
 export default function HomeAction(props: IHomeActionProps) {
   const { categoryChose } = props;
   const [products, setProducts] = React.useState<Product[]>([]);
+  const [productChoose, setProductChoose] = React.useState<Product>();
   const [openAddProductModal, setOpenAddProductModal] = React.useState(false);
+  const [openInfoProductModal, setOpenInfoProductModal] = React.useState(false);
   function handleActionAddProductModal(state: boolean) {
     setOpenAddProductModal(state);
+  }
+
+  function handleActionInfoProductModal(state: boolean, product?: Product) {
+    setProductChoose(product);
+    setOpenInfoProductModal(state);
   }
 
   React.useEffect(() => {
@@ -73,8 +82,14 @@ export default function HomeAction(props: IHomeActionProps) {
     });
 
     // Update
+    handleActionAddProductModal(false)
+     toast(<div className="font-bold">Thêm mới nhóm hàng hóa thành công</div>, {
+       draggable: false,
+       position: "top-right",
+       type: "success",
+     });
   };
-
+  console.log("productChoose: ", productChoose);
   return (
     <div className="flex flex-col h-full">
       {openAddProductModal && (
@@ -83,6 +98,16 @@ export default function HomeAction(props: IHomeActionProps) {
           categoryChose={categoryChose}
           handleAddProduct={handleAddProduct}
           handleModal={handleActionAddProductModal}
+        />
+      )}
+
+      {openInfoProductModal && productChoose && (
+        <InfoProductModal
+          isOpen={openInfoProductModal}
+          productChoose={productChoose}
+          // categoryChose={categoryChose}
+          // handleAddProduct={handleAddProduct}
+          handleModal={handleActionInfoProductModal}
         />
       )}
 
@@ -103,7 +128,10 @@ export default function HomeAction(props: IHomeActionProps) {
         </p> */}
       </div>
       <div className="p-3 border-[4px] bg-white  flex-grow">
-        <TableContent products={products}/>
+        <TableContent
+          products={products}
+          handleActionInfoProductModal={handleActionInfoProductModal}
+        />
       </div>
     </div>
   );

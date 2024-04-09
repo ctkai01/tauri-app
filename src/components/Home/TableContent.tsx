@@ -11,10 +11,11 @@ import { appDataDir } from "@tauri-apps/api/path";
 
 export interface ITableContentProps {
   products: Product[];
+  handleActionInfoProductModal: (state: boolean, product?: Product) => void;
 }
 
 export default function TableContent(props: ITableContentProps) {
-  const { products } = props;
+  const { products, handleActionInfoProductModal } = props;
   const test = async() => {
     const appDataDirPath = await appDataDir();
     console.log("appDataDirPath: ", appDataDirPath);
@@ -44,7 +45,12 @@ export default function TableContent(props: ITableContentProps) {
                   {product.name}
                 </Table.Cell>
                 <Table.Cell>
-                  {product.image && <img src={convertFileSrc(product.image)} />}
+                  {product.image && (
+                    <img
+                      className=" h-[80px]"
+                      src={convertFileSrc(product.image)}
+                    />
+                  )}
                 </Table.Cell>
                 <Table.Cell>{product.quantity}</Table.Cell>
                 <Table.Cell>
@@ -57,7 +63,7 @@ export default function TableContent(props: ITableContentProps) {
                 <Table.Cell>
                   <div className="flex  gap-1">
                     <Tooltip content="Chi tiết hàng hóa">
-                      <Button color="blue">
+                      <Button onClick={() => handleActionInfoProductModal(true, product)} color="blue">
                         <FaCircleInfo />
                       </Button>
                     </Tooltip>

@@ -16,8 +16,8 @@ export interface Product {
   id: number;
   name: string;
   unit: string;
-  goldWeight?: string;
-  goldAge?: string;
+  gold_weight?: string;
+  gold_age?: string;
   stone_weight?: string;
   note?: string;
   wage?: string;
