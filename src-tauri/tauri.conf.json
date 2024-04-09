@@ -16,17 +16,34 @@
         "all": false,
         "open": true
       },
+      "dialog": {
+        "all": true,
+        "ask": true,
+        "confirm": true,
+        "message": true,
+        "open": true,
+        "save": true
+      },
       "path": {
         "all": true
       },
       "fs": {
         "all": true,
-        "scope": ["**"]
+        "scope": ["**"],
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true
+        
       },
       "protocol": {
-        "asset": false,
-        "assetScope": ["**"]
+        "asset": true,
+        "assetScope": ["**"],
+        "all": true
+      },
+      "http": {
+        "all": true
       }
+     
     },
     "windows": [
       {
@@ -35,8 +52,9 @@
         "height": 600
       }
     ],
+
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; media-src 'self' asset: asset://localhost"
     },
     "bundle": {
       "active": true,

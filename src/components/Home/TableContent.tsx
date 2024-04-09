@@ -6,13 +6,20 @@ import { MdDelete } from "react-icons/md";
 import { Product } from "../../models";
 import { calculateTotalPrice } from "../../utils";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
+import { open } from "@tauri-apps/api/dialog";
+import { appDataDir } from "@tauri-apps/api/path";
 
 export interface ITableContentProps {
-  products: Product[]
+  products: Product[];
 }
 
 export default function TableContent(props: ITableContentProps) {
-  const { products  } = props;
+  const { products } = props;
+  const test = async() => {
+    const appDataDirPath = await appDataDir();
+    console.log("appDataDirPath: ", appDataDirPath);
+  }
+  test()
   return (
     <div>
       <Table hoverable>
@@ -69,7 +76,7 @@ export default function TableContent(props: ITableContentProps) {
               </Table.Row>
             );
           })}
-         
+
           {/* <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
             <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
               Microsoft Surface Pro

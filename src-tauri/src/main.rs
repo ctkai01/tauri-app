@@ -9,7 +9,7 @@ mod util;
 use model::{Category, CreateCategory, CreateProduct, Product, GetProductsByCategory, UpdateCategory};
 use state::{AppState, ServiceAccess};
 use std::fs::{self, File};
-use tauri::{api::path::BaseDirectory, AppHandle, Manager, State};
+use tauri::{api::path::BaseDirectory, utils::config, AppHandle, Manager, State};
 use util::save_image;
 
 use crate::model::DeleteCategory;
@@ -76,12 +76,12 @@ fn get_categories(app_handle: AppHandle) -> Result<Vec<Category>, String> {
 }
 
 #[tauri::command]
-fn get_categories_all(app_handle: AppHandle) -> Result<Vec<Category>, String> {
+fn get_categories_all(config: tauri::Config, app_handle: AppHandle) -> Result<Vec<Category>, String> {
     // Should handle errors instead of unwrapping here
     // let create_category: CreateCategory = serde_json::from_str(&data).map_err(|e| e.to_string())?;
-
+    println!("config: {:?}", config);
     let categories = app_handle.db(|db| database::get_all_category(db)).unwrap();
-
+    
     // let items = app_handle.db(|db| database::get_all(db)).unwrap();
     Ok(categories)
 }
@@ -116,7 +116,7 @@ fn delete_category(app_handle: AppHandle, data: String) -> Result<(), String> {
         Ok(_) => {}
         Err(err) => return Err(String::from(err.to_string())),
     }
-
+    
     Ok(())
 }
 fn main() {
