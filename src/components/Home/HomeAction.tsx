@@ -7,7 +7,9 @@ import { CreateProduct, Product } from "../../models";
 import { Category } from "../../pages/Home";
 import { fileToArrayBuffer } from "../../utils";
 import AddProductModal from "../Modal/Product/AddProductModal";
+import DeleteProductModal from "../Modal/Product/DeleteProductModal ";
 import InfoProductModal from "../Modal/Product/InfoProductModal";
+import UpdateProductModal from "../Modal/Product/UpdateProductModal";
 import TableContent from "./TableContent";
 
 export interface IHomeActionProps {
@@ -20,9 +22,22 @@ export default function HomeAction(props: IHomeActionProps) {
   const [productChoose, setProductChoose] = React.useState<Product>();
   const [openAddProductModal, setOpenAddProductModal] = React.useState(false);
   const [openInfoProductModal, setOpenInfoProductModal] = React.useState(false);
+  const [openDeleteProductModal, setOpenDeleteProductModal] = React.useState(false);
+  const [openUpdateProductModal, setOpenUpdateProductModal] =
+    React.useState(false);
   function handleActionAddProductModal(state: boolean) {
     setOpenAddProductModal(state);
   }
+
+    function handleActionDeleteProductModal(state: boolean, product?: Product) {
+       setProductChoose(product);
+      setOpenDeleteProductModal(state);
+    }
+
+    function handleActionUpdateProductModal(state: boolean, product?: Product) {
+       setProductChoose(product);
+      setOpenUpdateProductModal(state);
+    }
 
   function handleActionInfoProductModal(state: boolean, product?: Product) {
     setProductChoose(product);
@@ -90,6 +105,10 @@ export default function HomeAction(props: IHomeActionProps) {
      });
   };
   console.log("productChoose: ", productChoose);
+
+  const handleDeleteProduct  = () => {
+    console.log("delte")
+  } 
   return (
     <div className="flex flex-col h-full">
       {openAddProductModal && (
@@ -100,7 +119,6 @@ export default function HomeAction(props: IHomeActionProps) {
           handleModal={handleActionAddProductModal}
         />
       )}
-
       {openInfoProductModal && productChoose && (
         <InfoProductModal
           isOpen={openInfoProductModal}
@@ -108,6 +126,24 @@ export default function HomeAction(props: IHomeActionProps) {
           // categoryChose={categoryChose}
           // handleAddProduct={handleAddProduct}
           handleModal={handleActionInfoProductModal}
+        />
+      )}
+      {openUpdateProductModal && productChoose && (
+        <UpdateProductModal
+          productChoose={productChoose}
+          isOpen={openUpdateProductModal}
+          // categoryChose={categoryChose}
+          // handleAddProduct={handleAddProduct}
+          handleModal={handleActionUpdateProductModal}
+        />
+      )}
+      {openDeleteProductModal && productChoose && (
+        <DeleteProductModal
+          isOpen={openDeleteProductModal}
+          // categoryChose={categoryChose}
+          // handleAddProduct={handleAddProduct}
+          handleDeleteProduct={handleDeleteProduct}
+          handleModal={handleActionDeleteProductModal}
         />
       )}
 
@@ -131,6 +167,8 @@ export default function HomeAction(props: IHomeActionProps) {
         <TableContent
           products={products}
           handleActionInfoProductModal={handleActionInfoProductModal}
+          handleActionUpdateProductModal={handleActionUpdateProductModal}
+          handleActionDeleteProductModal={handleActionDeleteProductModal}
         />
       </div>
     </div>

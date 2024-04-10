@@ -49,6 +49,30 @@ pub struct CreateProduct {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateProduct {
+    pub id: i64,
+    pub name: String,
+    pub unit: String,
+    pub gold_weight: Option<String>,
+    pub gold_age: Option<String>,
+    pub stone_weight: Option<String>,
+    pub total_weight: f32,
+    pub image: Option<SaveImageToFilePayload>,
+    pub note: Option<String>,
+    pub wage: Option<String>,
+    pub stone_price: Option<String>,
+    pub price: Option<String>,
+    pub quantity: i64,
+    pub category_id: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+
+pub struct DeleteProduct {
+    pub id: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Product {
     pub id: i64,
     pub name: String,

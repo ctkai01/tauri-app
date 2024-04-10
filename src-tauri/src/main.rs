@@ -8,11 +8,11 @@ mod state;
 mod util;
 use model::{Category, CreateCategory, CreateProduct, Product, GetProductsByCategory, UpdateCategory};
 use state::{AppState, ServiceAccess};
-use std::fs::{self, File};
-use tauri::{api::path::BaseDirectory, utils::config, AppHandle, Manager, State};
+use std::{fs::{self, File}, sync::{Arc, Mutex}};
+use tauri::{api::path::BaseDirectory, utils::config, AppHandle, Manager, State, Config};
 use util::save_image;
 
-use crate::model::DeleteCategory;
+use crate::model::{DeleteCategory, UpdateProduct};
 
 #[tauri::command]
 fn create_category(app_handle: AppHandle, data: String) -> Result<i64, String> {
@@ -33,7 +33,30 @@ fn create_product(app_handle: AppHandle, data: String) -> Result<i64, String> {
     let create_product: CreateProduct = serde_json::from_str(&data).map_err(|e| e.to_string())?;
     let image_path = match &create_product.image {
         Some(data) => {
-            match save_image(&data.file_name, &data.image_data, Some(app_handle.identifier())) {
+            match save_image(&data.file_name, &data.image_data, app_handle.path_image()) {
+                Ok(path) =>  path,
+                Err(e) => return Err(e), // Propagate the error if save_image fails
+            }
+        }
+        None => {
+             "".to_string()
+        }
+    };
+
+    let id = app_handle
+        .db(|db| database::add_product(create_product, image_path, db))
+        .unwrap();
+    println!("ID: {}", id);
+    Ok(id)
+}
+
+#[tauri::command]
+fn update_product(app_handle: AppHandle, data: String) -> Result<i64, String> {
+    // Should handle errors instead of unwrapping here
+    let create_product: UpdateProduct = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    let image_path = match &create_product.image {
+        Some(data) => {
+            match save_image(&data.file_name, &data.image_data, app_handle.path_image()) {
                 Ok(path) =>  path,
                 Err(e) => return Err(e), // Propagate the error if save_image fails
             }
@@ -123,7 +146,7 @@ fn main() {
     tauri::Builder::default()
         .manage(AppState {
             db: Default::default(),
-            identifier: Default::default()
+            path_image: Default::default(),
         })
         .setup(|app| {
             let handle = app.handle();
@@ -134,9 +157,9 @@ fn main() {
             println!("{:?}", db);
             *app_state.db.lock().unwrap() = Some(db);
             let identifier = handle.path_resolver().app_data_dir().unwrap_or(std::path::PathBuf::new()).to_string_lossy().to_string().split("/").last().unwrap().to_string();
-            *app_state.identifier.lock().unwrap() = identifier;
-           
-            // println!("handle: {:?}", handle.path_resolver().app_data_dir().unwrap_or(std::path::PathBuf::new()).to_string_lossy());
+            *app_state.path_image.lock().unwrap() = identifier;
+
+            
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

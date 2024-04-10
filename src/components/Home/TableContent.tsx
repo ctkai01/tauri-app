@@ -12,10 +12,17 @@ import { appDataDir } from "@tauri-apps/api/path";
 export interface ITableContentProps {
   products: Product[];
   handleActionInfoProductModal: (state: boolean, product?: Product) => void;
+  handleActionUpdateProductModal: (state: boolean, product?: Product) => void;
+  handleActionDeleteProductModal: (state: boolean, product?: Product) => void;
 }
 
 export default function TableContent(props: ITableContentProps) {
-  const { products, handleActionInfoProductModal } = props;
+  const {
+    products,
+    handleActionInfoProductModal,
+    handleActionUpdateProductModal,
+    handleActionDeleteProductModal,
+  } = props;
   const test = async() => {
     const appDataDirPath = await appDataDir();
     console.log("appDataDirPath: ", appDataDirPath);
@@ -74,12 +81,21 @@ export default function TableContent(props: ITableContentProps) {
                       </Button>
                     </Tooltip>
                     <Tooltip content="Cập nhật hàng hóa">
-                      <Button>
+                      <Button
+                        onClick={() =>
+                          handleActionUpdateProductModal(true, product)
+                        }
+                      >
                         <BsFillPencilFill />
                       </Button>
                     </Tooltip>
                     <Tooltip content="Xóa hàng hóa">
-                      <Button color="failure">
+                      <Button 
+                        onClick={() =>
+                          handleActionDeleteProductModal(true, product)
+                        }
+                      
+                      color="failure">
                         <MdDelete />
                       </Button>
                     </Tooltip>

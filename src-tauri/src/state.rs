@@ -1,16 +1,17 @@
 use rusqlite::Connection;
-use tauri::{AppHandle, State, Manager};
+use tauri::{AppHandle, State, Manager, Config};
 
 pub struct AppState {
   pub db: std::sync::Mutex<Option<Connection>>,
-  pub identifier: std::sync::Mutex<String>
+  pub path_image: std::sync::Mutex<String>,
+  // pub config: std::sync::Mutex<&'a Config>
 }
 
 pub trait ServiceAccess {
   fn db<F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&Connection) -> TResult;
 
   fn db_mut<F, TResult>(&self, operation: F) -> TResult where F: FnOnce(&mut Connection) -> TResult;
-  fn identifier(&self) -> String;
+  fn path_image(&self) -> String;
 }
 
 impl ServiceAccess for AppHandle {
@@ -22,9 +23,9 @@ impl ServiceAccess for AppHandle {
     operation(db)
   }
 
-  fn identifier(&self) -> String {
+  fn path_image(&self) -> String {
     let app_state: State<AppState> = self.state();
-    let identifier = app_state.identifier.lock().unwrap().to_string();
+    let identifier = app_state.path_image.lock().unwrap().to_string();
     identifier
   }
 

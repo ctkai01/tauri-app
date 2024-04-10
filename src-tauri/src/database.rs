@@ -2,7 +2,10 @@ use rusqlite::{named_params, Connection};
 use std::fs;
 use tauri::AppHandle;
 
-use crate::model::{Category, CreateCategory, CreateProduct, DeleteCategory, GetProductsByCategory, Product, UpdateCategory};
+use crate::model::{
+    Category, CreateCategory, CreateProduct, DeleteCategory, GetProductsByCategory, Product,
+    UpdateCategory, UpdateProduct,
+};
 
 const CURRENT_DB_VERSION: u32 = 1;
 
@@ -150,6 +153,20 @@ pub fn update_category(data: UpdateCategory, db: &Connection) -> Result<(), rusq
     Ok(())
 }
 
+pub fn update_product(
+    data: UpdateProduct,
+    db: &Connection,
+    image_path: String,
+) -> Result<(), rusqlite::Error> {
+    println!("data update: {:?}", data);
+    let mut statement = db.prepare(
+        "UPDATE products SET name = @name, unit = @unit, category_id = @category_id, image = @image, gold_weight = @gold_weight, note = @note, age_gold = @age_gold, stone_weight = @stone_weight, total_weight = @total_weight, wage = @wage, stone_price = @stone_price, price = @price, quantity = @quantity WHERE id = @id",
+    )?;
+    statement.execute(named_params! {"@name": data.name, "@unit": data.unit,  "@category_id": data.category_id, "@image": image_path,  "@gold_weight": data.gold_weight.unwrap_or_default(), "@note": data.note.unwrap_or_default(), "@age_gold": data.gold_age.unwrap_or_default(), "@stone_weight": data.stone_weight.unwrap_or_default(),  "@total_weight": data.total_weight.unwrap_or_default(),  "@wage": data.wage.unwrap_or_default(), "@stone_price": data.stone_price.unwrap_or_default(), "@price": data.price.unwrap_or_default(), "@quantity": data.quantity.unwrap_or_default(),  "@id": data.id })?;
+
+    Ok(())
+}
+
 pub fn get_all_category_root(db: &Connection) -> Result<Vec<Category>, rusqlite::Error> {
     // let mut stmt = db.prepare(
     //     "Select ID, code, name, parent_id, created_at FROM categories where parent_id = 0",
@@ -249,7 +266,36 @@ pub fn get_all_category(db: &Connection) -> Result<Vec<Category>, rusqlite::Erro
     Ok(categories)
 }
 
-pub fn get_products_by_category_id_paginate(db: &Connection, get_category_data: GetProductsByCategory) -> Result<Vec<Product>, rusqlite::Error> {
+pub fn get_product_by_id(db: &Connection, id: i64) -> Result<Option<Product>, rusqlite::Error> {
+     let mut stmt = db.prepare("Select image  FROM products WHERE id = ?")?;
+
+    let products_iter = stmt.query_map([&id], |row| {
+        Ok(Product {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            unit: row.get(2)?,
+            category_id: row.get(3)?,
+            image: row.get(4)?,
+            gold_weight: row.get(5)?,
+            note: row.get(6)?,
+            gold_age: row.get(7)?,
+            stone_weight: row.get(8)?,
+            total_weight: row.get(9)?,
+            wage: row.get(10)?,
+            stone_price: row.get(11)?,
+            price: row.get(12)?,
+            quantity: row.get(13)?,
+            created_at: row.get(14)?,
+            updated_at: row.get(15)?,
+        })
+    })?;
+    Ok(None)
+}
+
+pub fn get_products_by_category_id_paginate(
+    db: &Connection,
+    get_category_data: GetProductsByCategory,
+) -> Result<Vec<Product>, rusqlite::Error> {
     let mut stmt = db.prepare("Select *  FROM products WHERE category_id = ?")?;
 
     let products_iter = stmt.query_map([&get_category_data.category_id], |row| {
