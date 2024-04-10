@@ -33,7 +33,7 @@ fn create_product(app_handle: AppHandle, data: String) -> Result<i64, String> {
     let create_product: CreateProduct = serde_json::from_str(&data).map_err(|e| e.to_string())?;
     let image_path = match &create_product.image {
         Some(data) => {
-            match save_image(&data.file_name, &data.image_data) {
+            match save_image(&data.file_name, &data.image_data, Some(app_handle.identifier())) {
                 Ok(path) =>  path,
                 Err(e) => return Err(e), // Propagate the error if save_image fails
             }
@@ -46,6 +46,7 @@ fn create_product(app_handle: AppHandle, data: String) -> Result<i64, String> {
     let id = app_handle
         .db(|db| database::add_product(create_product, image_path, db))
         .unwrap();
+    println!("ID: {}", id);
     Ok(id)
 }
 
@@ -122,16 +123,20 @@ fn main() {
     tauri::Builder::default()
         .manage(AppState {
             db: Default::default(),
+            identifier: Default::default()
         })
         .setup(|app| {
             let handle = app.handle();
-
+          
             let app_state: State<AppState> = handle.state();
             let db =
                 database::initialize_database(&handle).expect("Database initialize should succeed");
             println!("{:?}", db);
             *app_state.db.lock().unwrap() = Some(db);
-
+            let identifier = handle.path_resolver().app_data_dir().unwrap_or(std::path::PathBuf::new()).to_string_lossy().to_string().split("/").last().unwrap().to_string();
+            *app_state.identifier.lock().unwrap() = identifier;
+           
+            // println!("handle: {:?}", handle.path_resolver().app_data_dir().unwrap_or(std::path::PathBuf::new()).to_string_lossy());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

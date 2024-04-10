@@ -48,6 +48,7 @@ export default function TableContent(props: ITableContentProps) {
                   {product.image && (
                     <img
                       className=" h-[80px]"
+                      // src={convertFileSrc("/home/ctkai/Downloads/ip12.jpeg")}
                       src={convertFileSrc(product.image)}
                     />
                   )}
@@ -63,7 +64,12 @@ export default function TableContent(props: ITableContentProps) {
                 <Table.Cell>
                   <div className="flex  gap-1">
                     <Tooltip content="Chi tiết hàng hóa">
-                      <Button onClick={() => handleActionInfoProductModal(true, product)} color="blue">
+                      <Button
+                        onClick={() =>
+                          handleActionInfoProductModal(true, product)
+                        }
+                        color="blue"
+                      >
                         <FaCircleInfo />
                       </Button>
                     </Tooltip>
