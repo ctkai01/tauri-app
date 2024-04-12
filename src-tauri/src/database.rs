@@ -360,49 +360,96 @@ pub fn get_products_by_category_id_paginate(
     })?;
     let total_count = count_row;
     let total_page = (total_count + get_category_data.limit - 1) / get_category_data.limit;
+    let mut stmt;
+    if get_category_data.search.is_empty() {
+        stmt = db.prepare("SELECT * FROM products WHERE category_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")?;
 
-    let mut stmt = db.prepare("Select *  FROM products WHERE category_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")?;
-
-    let products_iter = stmt.query_map(
-        [
-            &get_category_data.category_id,
-            &get_category_data.limit,
-            &offset,
-        ],
-        |row| {
-            Ok(Product {
-                id: row.get(0)?,
-                name: row.get(1)?,
-                unit: row.get(2)?,
-                category_id: row.get(3)?,
-                image: row.get(4)?,
-                gold_weight: row.get(5)?,
-                note: row.get(6)?,
-                gold_age: row.get(7)?,
-                stone_weight: row.get(8)?,
-                total_weight: row.get(9)?,
-                wage: row.get(10)?,
-                stone_price: row.get(11)?,
-                price: row.get(12)?,
-                quantity: row.get(13)?,
-                created_at: row.get(14)?,
-                updated_at: row.get(15)?,
-            })
-        },
-    )?;
-    let mut products = vec![];
-    for product_result in products_iter {
-        let product = product_result?;
-        products.push(product);
+        let products_iter = stmt.query_map(
+            [
+                &get_category_data.category_id,
+                &get_category_data.limit,
+                &offset,
+            ],
+            |row| {
+                Ok(Product {
+                    id: row.get(0)?,
+                    name: row.get(1)?,
+                    unit: row.get(2)?,
+                    category_id: row.get(3)?,
+                    image: row.get(4)?,
+                    gold_weight: row.get(5)?,
+                    note: row.get(6)?,
+                    gold_age: row.get(7)?,
+                    stone_weight: row.get(8)?,
+                    total_weight: row.get(9)?,
+                    wage: row.get(10)?,
+                    stone_price: row.get(11)?,
+                    price: row.get(12)?,
+                    quantity: row.get(13)?,
+                    created_at: row.get(14)?,
+                    updated_at: row.get(15)?,
+                })
+            },
+        )?;
+        let mut products = vec![];
+        for product_result in products_iter {
+            let product = product_result?;
+            products.push(product);
+        }
+        println!("categories: {:?}", products);
+        Ok(GetProductsByCategoryRes {
+            products,
+            limit: get_category_data.limit,
+            page: get_category_data.page,
+            total_count,
+            total_page,
+        })
+    } else {
+        let search_param = format!("%{}%", get_category_data.search);
+        stmt = db.prepare("SELECT * FROM products WHERE category_id = ? AND name LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?")?;
+  
+        let products_iter = stmt.query_map(
+             [
+                &get_category_data.category_id.to_string(),
+                &search_param,
+                &get_category_data.limit.to_string(),
+                &offset.to_string(),
+            ],
+            |row| {
+                Ok(Product {
+                    id: row.get(0)?,
+                    name: row.get(1)?,
+                    unit: row.get(2)?,
+                    category_id: row.get(3)?,
+                    image: row.get(4)?,
+                    gold_weight: row.get(5)?,
+                    note: row.get(6)?,
+                    gold_age: row.get(7)?,
+                    stone_weight: row.get(8)?,
+                    total_weight: row.get(9)?,
+                    wage: row.get(10)?,
+                    stone_price: row.get(11)?,
+                    price: row.get(12)?,
+                    quantity: row.get(13)?,
+                    created_at: row.get(14)?,
+                    updated_at: row.get(15)?,
+                })
+            },
+        )?;
+        let mut products = vec![];
+        for product_result in products_iter {
+            let product = product_result?;
+            products.push(product);
+        }
+        println!("categories: {:?}", products);
+        Ok(GetProductsByCategoryRes {
+            products,
+            limit: get_category_data.limit,
+            page: get_category_data.page,
+            total_count,
+            total_page,
+        })
     }
-    println!("categories: {:?}", products);
-    Ok(GetProductsByCategoryRes {
-        products,
-        limit: get_category_data.limit,
-        page: get_category_data.page,
-        total_count,
-        total_page,
-    })
 }
 
 pub fn get_products_by_category_id(

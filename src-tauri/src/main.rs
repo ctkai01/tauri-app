@@ -3,21 +3,23 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
 mod database;
+mod excel;
 mod model;
 mod state;
 mod util;
+use crate::model::{DeleteCategory, UpdateProduct};
 use model::{
-    Category, CreateCategory, CreateProduct, DeleteProduct, GetProductsByCategory, GetProductsByCategoryRes, Product, ProductCreateResponse, ProductUpdateResponse, UpdateCategory
+    Category, CreateCategory, CreateProduct, DeleteProduct, GetProductsByCategory,
+    GetProductsByCategoryRes, PrintProduct, Product, ProductCreateResponse, ProductUpdateResponse,
+    UpdateCategory,
 };
 use state::{AppState, ServiceAccess};
 use std::{
     fs::{self, File},
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex}, process::Command,
 };
 use tauri::{api::path::BaseDirectory, utils::config, AppHandle, Config, Manager, State};
 use util::save_image;
-
-use crate::model::{DeleteCategory, UpdateProduct};
 
 #[tauri::command]
 fn create_category(app_handle: AppHandle, data: String) -> Result<i64, String> {
@@ -92,7 +94,10 @@ fn update_product(app_handle: AppHandle, data: String) -> Result<ProductUpdateRe
 }
 
 #[tauri::command]
-fn get_product_by_category(app_handle: AppHandle, data: String) -> Result<GetProductsByCategoryRes, String> {
+fn get_product_by_category(
+    app_handle: AppHandle,
+    data: String,
+) -> Result<GetProductsByCategoryRes, String> {
     // Should handle errors instead of unwrapping here
     let get_category_data: GetProductsByCategory =
         serde_json::from_str(&data).map_err(|e| e.to_string())?;
@@ -152,8 +157,9 @@ fn delete_category(app_handle: AppHandle, data: String) -> Result<(), String> {
     let delete_category: DeleteCategory = serde_json::from_str(&data).map_err(|e| e.to_string())?;
 
     // Delete image of product
-    let products =
-        app_handle.db(|db| database::get_products_by_category_id(db, delete_category.id)).unwrap();
+    let products = app_handle
+        .db(|db| database::get_products_by_category_id(db, delete_category.id))
+        .unwrap();
 
     for product in products {
         match product.image {
@@ -170,13 +176,9 @@ fn delete_category(app_handle: AppHandle, data: String) -> Result<(), String> {
     let result = app_handle.db(|db| database::delete_category(delete_category, db));
 
     match result {
-        Ok(_) => {
-             Ok(())
-        }
+        Ok(_) => Ok(()),
         Err(err) => Err(String::from(err.to_string())),
     }
-
-   
 }
 
 #[tauri::command]
@@ -210,6 +212,40 @@ fn delete_product(app_handle: AppHandle, data: String) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+#[tauri::command]
+fn print_excel(app_handle: AppHandle, data: String) -> Result<(), String> {
+    let print_product: PrintProduct = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+
+    match excel::create_xlsx(print_product.products) {
+        Ok(()) => {
+            let output =
+                Command::new("C:\\Program Files (x86)\\Seagull\\BarTender Suite\\bartend.exe")
+                    .arg("C:\\Users\\Admin\\Downloads\\tem.btw")
+                    .arg("/PD")
+                    .output();
+
+            // Check if the command executed successfully
+            match output {
+                Ok(output) => {
+                    if output.status.success() {
+                        println!("Command executed successfully!");
+                    } else {
+                        println!("Command failed with status: {}", output.status);
+                    }
+                }
+                Err(e) => {
+                    println!("Error executing command: {}", e);
+                }
+            }
+            Ok(())
+        }
+        Err(err) => {
+            println!("ok: {:?}", err);
+            Err(err.to_string())
+        }
+    }
 }
 fn main() {
     tauri::Builder::default()
@@ -248,7 +284,8 @@ fn main() {
             create_product,
             get_product_by_category,
             update_product,
-            delete_product
+            delete_product,
+            print_excel
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

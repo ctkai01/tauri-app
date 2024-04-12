@@ -25,7 +25,7 @@ pub fn save_image(
     //         path_folder
     //     }
     // };
-    let dir_save = "/home/ctkai/tauri_app";
+    // let dir_save = "/home/ctkai/tauri_app";
 
     let full_file_path = format!("{}/{}_{}", dir_save, timestamp, file_path);
     let path = std::path::Path::new(full_file_path.as_str());

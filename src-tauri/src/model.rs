@@ -140,6 +140,7 @@ pub struct GetProductsByCategory {
   pub category_id: i64, // Assuming the image file data is sent as a byte array
   pub page: i64,   // The name of the file to save the image to
   pub limit: i64,   // The name of the file to save the image to
+  pub search: String,   // The name of the file to save the image to
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -149,4 +150,9 @@ pub struct GetProductsByCategoryRes {
   pub limit: i64,  
   pub total_page: i64,   
   pub total_count: i64,   
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PrintProduct {
+    pub products: Vec<Product>,
 }

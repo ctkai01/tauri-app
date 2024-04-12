@@ -8,9 +8,12 @@ import { calculateTotalPrice } from "../../utils";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { open } from "@tauri-apps/api/dialog";
 import { appDataDir } from "@tauri-apps/api/path";
+import { CheckboxProduct } from "./HomeAction";
 // import emptyImg from "../../assets/images/empty.jpg"
 export interface ITableContentProps {
   products: Product[];
+  checkboxes: CheckboxProduct[]
+  handleToggleCheckBox: (id: number) => void;
   handleActionInfoProductModal: (state: boolean, product?: Product) => void;
   handleActionUpdateProductModal: (state: boolean, product?: Product) => void;
   handleActionDeleteProductModal: (state: boolean, product?: Product) => void;
@@ -29,6 +32,8 @@ const customTheme: CustomFlowbiteTheme = {
 export default function TableContent(props: ITableContentProps) {
   const {
     products,
+    checkboxes,
+    handleToggleCheckBox,
     handleActionInfoProductModal,
     handleActionUpdateProductModal,
     handleActionDeleteProductModal,
@@ -43,6 +48,9 @@ export default function TableContent(props: ITableContentProps) {
       <Flowbite theme={{ theme: customTheme }}>
         <Table hoverable>
           <Table.Head>
+            <Table.HeadCell className="p-4">
+              <Checkbox />
+            </Table.HeadCell>
             <Table.HeadCell>Tên hàng</Table.HeadCell>
             <Table.HeadCell>Hình ảnh</Table.HeadCell>
             <Table.HeadCell>Số lượng</Table.HeadCell>
@@ -59,6 +67,12 @@ export default function TableContent(props: ITableContentProps) {
                   key={i}
                   className="bg-white dark:border-gray-700 dark:bg-gray-800"
                 >
+                  <Table.Cell className="p-4">
+                    <Checkbox
+                      checked={checkboxes[i] ? checkboxes[i].isCheck : false}
+                      onClick={() => handleToggleCheckBox(product.id)}
+                    />
+                  </Table.Cell>
                   <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                     {product.name}
                   </Table.Cell>
