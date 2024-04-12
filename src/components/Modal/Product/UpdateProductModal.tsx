@@ -15,16 +15,30 @@ import { Controller, useForm } from "react-hook-form";
 import { IoMdClose } from "react-icons/io";
 import { NumericFormat } from "react-number-format";
 import { ValidationError } from "yup";
-import { CreateProduct, Product, UpdateAvatar, UpdateProduct } from "../../../models";
+import {
+  CreateProduct,
+  Product,
+  UpdateAvatar,
+  UpdateProduct,
+} from "../../../models";
 import { Category } from "../../../pages/Home";
-import { schemeCreateProduct, schemeUpdateImage, schemeUpdateProduct } from "../../../validators";
+import {
+  schemeCreateProduct,
+  schemeUpdateImage,
+  schemeUpdateProduct,
+} from "../../../validators";
 import { invoke } from "@tauri-apps/api";
 import { fileToArrayBuffer } from "../../../utils";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 export interface IUpdateProductModalProps {
   isOpen: boolean;
   handleModal: (state: boolean) => void;
-  productChoose: Product
+  productChoose: Product;
+  handleUpdateProduct: (
+    data: UpdateProduct,
+    imageFile: File | undefined,
+    totalWeight: string
+  ) => void;
   // handleAddProduct: (
   //   createProduct: CreateProduct,
   //   imageFile: File | undefined,
@@ -43,10 +57,10 @@ const customThemeModal: CustomFlowbiteTheme = {
 };
 
 export default function UpdateProductModal(props: IUpdateProductModalProps) {
-  const { isOpen, handleModal, productChoose } = props;
+  const { isOpen, handleModal, productChoose, handleUpdateProduct } = props;
   const [imageFile, setImageFile] = useState<File | undefined>(undefined);
   const [imagePreview, setImagePreview] = useState(
-    convertFileSrc(productChoose.image)
+    productChoose.image ? convertFileSrc(productChoose.image) : "/empty.jpg"
   );
   const [totalWeight, setTotalWeight] = useState("");
   const inputImageRef = useRef<HTMLInputElement>(null);
@@ -74,7 +88,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
       stonePrice: productChoose.stone_price,
       stoneWeight: productChoose.stone_weight,
       unit: productChoose.unit,
-      wage: productChoose.wage
+      wage: productChoose.wage,
     },
     // values: {
     //   price: 1.1,
@@ -88,7 +102,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
   useEffect(() => {
     const fetchCategoriesAll = async () => {
       const categoriesData: Category[] = await invoke("get_categories_all");
-   
+
       setCategoriesMenu(categoriesData);
     };
     fetchCategoriesAll();
@@ -106,6 +120,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
   }, [goldWeight, stoneWeight]);
 
   const onSubmit = async (data: UpdateProduct) => {
+    handleUpdateProduct(data, imageFile, totalWeight);
     // handleAddProduct(data, imageFile, totalWeight);
     // handleAddCategory(data);
     // reset();
@@ -162,7 +177,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
         popup
       >
         <Modal.Header>
-          <p className="text-sm font-bold ">Thêm mới hàng hóa</p>
+          <p className="text-sm font-bold ">Cập nhật hàng hóa</p>
         </Modal.Header>
         <Modal.Body>
           <form onSubmit={handleSubmit(onSubmit)} className="flex-col gap-4">
@@ -277,8 +292,9 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                           <img
                             // src="https://www.flowbite-react.com/images/people/profile-picture-5.jpg"
                             src={imagePreview}
-                            className="max-w-[150px]"
+                            className="max-w-[150px]  h-[100px]"
                           />
+
                           <div
                             className="absolute right-0 top-0 cursor-pointer"
                             onClick={() => handleRemoveImage()}
@@ -569,7 +585,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
             </div>
             <div className="flex text-xs justify-center gap-4 mt-3">
               <Button size="sm" color="success" type="submit">
-                Thêm
+                Cập nhật
               </Button>
               <Button size="sm" color="gray" onClick={() => handleModal(false)}>
                 Hủy bỏ

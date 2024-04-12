@@ -28,8 +28,11 @@ export default function Home(props: IHomeProps) {
             handleSetCategoryChose={handleSetCategoryChose}
           />
         </div>
-        <div className="w-[80%]">
-          <HomeAction categoryChose={categoryChose} />
+        <div className="w-[80%] flex flex-col">
+          {categoryChose && <HomeAction categoryChose={categoryChose} />}
+          {!categoryChose && <div className="flex-1 text-sm flex justify-center items-center">
+            Vui lòng chọn nhóm hàng
+            </div>}
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
-export const calculateTotalPrice = (prices: string[]): number => {
+export const calculateTotalPrice = (prices: string[]): string => {
   let total = 0;
 
   prices.forEach((price) => {
     total += +price;
   });
-  return total;
+  return total.toLocaleString("en-US");
 };

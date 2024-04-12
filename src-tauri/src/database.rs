@@ -1,9 +1,11 @@
-use rusqlite::{named_params, Connection};
+use chrono::NaiveDateTime;
+use rusqlite::{named_params, params, Connection};
 use std::fs;
 use tauri::AppHandle;
 
 use crate::model::{
-    Category, CreateCategory, CreateProduct, DeleteCategory, GetProductsByCategory, Product,
+    Category, CreateCategory, CreateProduct, DeleteCategory, DeleteProduct, GetProductsByCategory,
+    GetProductsByCategoryRes, Product, ProductCreateResponse, ProductUpdateResponse,
     UpdateCategory, UpdateProduct,
 };
 
@@ -100,10 +102,10 @@ pub fn add_category(data: CreateCategory, db: &Connection) -> Result<i64, rusqli
 }
 
 pub fn add_product(
-    data: CreateProduct,
+    data: &CreateProduct,
     image_path: String,
     db: &Connection,
-) -> Result<i64, rusqlite::Error> {
+) -> Result<ProductCreateResponse, rusqlite::Error> {
     let mut statement = db.prepare(
         "INSERT INTO products (name, unit, category_id, image, gold_weight, note, age_gold, stone_weight, total_weight, wage, stone_price, price, quantity) VALUES (@name, @unit, @category_id, @image, @gold_weight, @note, @age_gold, @stone_weight, @total_weight, @wage, @stone_price, @price, @quantity)",
     )?;
@@ -112,21 +114,41 @@ pub fn add_product(
         "@unit": data.unit,
         "@category_id": data.category_id,
         "@image": image_path,
-        "@gold_weight": data.gold_weight.unwrap_or_default(),
-        "@note": data.note.unwrap_or_default(),
-        "@age_gold": data.gold_age.unwrap_or_default(),
-        "@stone_weight": data.stone_weight.unwrap_or_default(),
+        "@gold_weight": data.gold_weight.as_deref().unwrap_or_default(),
+        "@note": data.note.as_deref().unwrap_or_default(),
+        "@age_gold": data.gold_age.as_deref().unwrap_or_default(),
+        "@stone_weight": data.stone_weight.as_deref().unwrap_or_default(),
         "@total_weight": data.total_weight,
-        "@wage": data.wage.unwrap_or_default(),
-        "@stone_price": data.stone_price.unwrap_or_default(),
+        "@wage": data.wage.as_deref().unwrap_or_default(),
+        "@stone_price": data.stone_price.as_deref().unwrap_or_default(),
         "@price": data.price,
         "@quantity": data.quantity,
     })?;
 
     // Retrieve the ID of the last inserted row
     let id = db.last_insert_rowid();
+    let mut img = None;
 
-    Ok(id)
+    if image_path != "" {
+        img = Some(image_path)
+    }
+    let add_product = ProductCreateResponse {
+        id,
+        category_id: data.category_id,
+        name: data.name.clone(),
+        gold_age: data.gold_age.clone(),
+        gold_weight: data.gold_weight.clone(),
+        image: img,
+        note: data.note.clone(),
+        price: data.price.clone(),
+        quantity: data.quantity,
+        stone_price: data.stone_price.clone(),
+        stone_weight: data.stone_weight.clone(),
+        total_weight: data.total_weight.to_string(),
+        unit: data.unit.clone(),
+        wage: data.wage.clone(),
+    };
+    Ok(add_product)
 }
 
 pub fn delete_category(data: DeleteCategory, db: &Connection) -> Result<(), rusqlite::Error> {
@@ -136,6 +158,15 @@ pub fn delete_category(data: DeleteCategory, db: &Connection) -> Result<(), rusq
     })?;
 
     let mut statement = db.prepare("DELETE FROM categories WHERE parent_id = @id")?;
+    statement.execute(named_params! {
+        "@id": data.id,
+    })?;
+
+    Ok(())
+}
+
+pub fn delete_product(data: DeleteProduct, db: &Connection) -> Result<(), rusqlite::Error> {
+    let mut statement = db.prepare("DELETE FROM products WHERE id = @id")?;
     statement.execute(named_params! {
         "@id": data.id,
     })?;
@@ -154,17 +185,38 @@ pub fn update_category(data: UpdateCategory, db: &Connection) -> Result<(), rusq
 }
 
 pub fn update_product(
-    data: UpdateProduct,
+    data: &UpdateProduct,
     db: &Connection,
     image_path: String,
-) -> Result<(), rusqlite::Error> {
+) -> Result<ProductUpdateResponse, rusqlite::Error> {
     println!("data update: {:?}", data);
     let mut statement = db.prepare(
         "UPDATE products SET name = @name, unit = @unit, category_id = @category_id, image = @image, gold_weight = @gold_weight, note = @note, age_gold = @age_gold, stone_weight = @stone_weight, total_weight = @total_weight, wage = @wage, stone_price = @stone_price, price = @price, quantity = @quantity WHERE id = @id",
     )?;
-    statement.execute(named_params! {"@name": data.name, "@unit": data.unit,  "@category_id": data.category_id, "@image": image_path,  "@gold_weight": data.gold_weight.unwrap_or_default(), "@note": data.note.unwrap_or_default(), "@age_gold": data.gold_age.unwrap_or_default(), "@stone_weight": data.stone_weight.unwrap_or_default(),  "@total_weight": data.total_weight,  "@wage": data.wage.unwrap_or_default(), "@stone_price": data.stone_price.unwrap_or_default(), "@price": data.price.unwrap_or_default(), "@quantity": data.quantity,  "@id": data.id })?;
 
-    Ok(())
+    statement.execute(named_params! {"@name": data.name, "@unit": data.unit,  "@category_id": data.category_id, "@image": image_path,  "@gold_weight": data.gold_weight.as_deref().unwrap_or_default(), "@note": data.note.as_deref().unwrap_or_default(), "@age_gold": data.gold_age.as_deref().unwrap_or_default(), "@stone_weight": data.stone_weight.as_deref().unwrap_or_default(),  "@total_weight": data.total_weight,  "@wage": data.wage.as_deref().unwrap_or_default(), "@stone_price": data.stone_price.as_deref().unwrap_or_default(), "@price": data.price.as_deref().unwrap_or_default(), "@quantity": data.quantity,  "@id": data.id })?;
+    let image = if image_path.is_empty() {
+        None
+    } else {
+        Some(image_path)
+    };
+    let update_product = ProductUpdateResponse {
+        id: data.id,
+        category_id: data.category_id,
+        name: data.name.clone(),
+        gold_age: data.gold_age.clone(),
+        gold_weight: data.gold_weight.clone(),
+        image,
+        note: data.note.clone(),
+        price: data.price.clone(),
+        quantity: data.quantity,
+        stone_price: data.stone_price.clone(),
+        stone_weight: data.stone_weight.clone(),
+        total_weight: data.total_weight.to_string(),
+        unit: data.unit.clone(),
+        wage: data.wage.clone(),
+    };
+    Ok(update_product)
 }
 
 pub fn get_all_category_root(db: &Connection) -> Result<Vec<Category>, rusqlite::Error> {
@@ -267,10 +319,12 @@ pub fn get_all_category(db: &Connection) -> Result<Vec<Category>, rusqlite::Erro
 }
 
 pub fn get_product_by_id(db: &Connection, id: i64) -> Result<Option<Product>, rusqlite::Error> {
-     let mut stmt = db.prepare("Select image  FROM products WHERE id = ?")?;
+    let mut stmt = db.prepare("Select *  FROM products WHERE id = ?")?;
 
-    let products_iter = stmt.query_map([&id], |row| {
-        Ok(Product {
+    let mut rows = stmt.query(params![id])?;
+
+    if let Some(row) = rows.next()? {
+        Ok(Some(Product {
             id: row.get(0)?,
             name: row.get(1)?,
             unit: row.get(2)?,
@@ -287,18 +341,77 @@ pub fn get_product_by_id(db: &Connection, id: i64) -> Result<Option<Product>, ru
             quantity: row.get(13)?,
             created_at: row.get(14)?,
             updated_at: row.get(15)?,
-        })
-    })?;
-    Ok(None)
+        }))
+    } else {
+        Ok(None)
+    }
 }
 
 pub fn get_products_by_category_id_paginate(
     db: &Connection,
     get_category_data: GetProductsByCategory,
+) -> Result<GetProductsByCategoryRes, rusqlite::Error> {
+    let offset = (get_category_data.page - 1) * get_category_data.limit;
+    let count_sql = "SELECT COUNT(*) FROM products WHERE category_id = ?";
+    let mut count_stmt = db.prepare(count_sql)?;
+
+    let count_row = count_stmt.query_row([&get_category_data.category_id], |row| {
+        row.get::<usize, i64>(0)
+    })?;
+    let total_count = count_row;
+    let total_page = (total_count + get_category_data.limit - 1) / get_category_data.limit;
+
+    let mut stmt = db.prepare("Select *  FROM products WHERE category_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")?;
+
+    let products_iter = stmt.query_map(
+        [
+            &get_category_data.category_id,
+            &get_category_data.limit,
+            &offset,
+        ],
+        |row| {
+            Ok(Product {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                unit: row.get(2)?,
+                category_id: row.get(3)?,
+                image: row.get(4)?,
+                gold_weight: row.get(5)?,
+                note: row.get(6)?,
+                gold_age: row.get(7)?,
+                stone_weight: row.get(8)?,
+                total_weight: row.get(9)?,
+                wage: row.get(10)?,
+                stone_price: row.get(11)?,
+                price: row.get(12)?,
+                quantity: row.get(13)?,
+                created_at: row.get(14)?,
+                updated_at: row.get(15)?,
+            })
+        },
+    )?;
+    let mut products = vec![];
+    for product_result in products_iter {
+        let product = product_result?;
+        products.push(product);
+    }
+    println!("categories: {:?}", products);
+    Ok(GetProductsByCategoryRes {
+        products,
+        limit: get_category_data.limit,
+        page: get_category_data.page,
+        total_count,
+        total_page,
+    })
+}
+
+pub fn get_products_by_category_id(
+    db: &Connection,
+    id: i64,
 ) -> Result<Vec<Product>, rusqlite::Error> {
     let mut stmt = db.prepare("Select *  FROM products WHERE category_id = ?")?;
 
-    let products_iter = stmt.query_map([&get_category_data.category_id], |row| {
+    let products_iter = stmt.query_map([&id], |row| {
         Ok(Product {
             id: row.get(0)?,
             name: row.get(1)?,
@@ -326,7 +439,6 @@ pub fn get_products_by_category_id_paginate(
     println!("categories: {:?}", products);
     Ok(products)
 }
-
 // pub fn get_all(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {
 //     let mut statement = db.prepare("SELECT * FROM items")?;
 //     let mut rows = statement.query([])?;

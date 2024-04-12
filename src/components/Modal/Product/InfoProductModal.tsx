@@ -21,6 +21,8 @@ import { schemeCreateProduct, schemeUpdateImage } from "../../../validators";
 import { invoke } from "@tauri-apps/api";
 import { fileToArrayBuffer } from "../../../utils";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
+// import emptyImg from "../../assets/images/empty.jpg";
+
 export interface IInfoProductModalProps {
   isOpen: boolean;
   // categoryChose: Category | null;
@@ -242,12 +244,24 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                         </div>
                       </div>
                     )} */}
-                    <img
+                    {/* <img
                       // src="https://www.flowbite-react.com/images/people/profile-picture-5.jpg"
                       // src={imagePreview}
                       src={convertFileSrc(productChoose.image)}
                       className="max-w-[150px]"
-                    />
+                    /> */}
+
+                    {productChoose.image && (
+                      <img
+                        className=" h-[80px]"
+                        // src={convertFileSrc("/home/ctkai/Downloads/ip12.jpeg")}
+                        src={convertFileSrc(productChoose.image)}
+                      />
+                    )}
+
+                    {!productChoose.image && (
+                      <img className=" h-[80px]" src="/empty.jpg" />
+                    )}
                   </div>
                 </div>
               </div>

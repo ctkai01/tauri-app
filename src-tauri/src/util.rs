@@ -25,8 +25,12 @@ pub fn save_image(
     //         path_folder
     //     }
     // };
+    let dir_save = "/home/ctkai/tauri_app";
 
-    let full_file_path = format!("{}/{}_{}", dir_save, timestamp, file_path);;
+    let full_file_path = format!("{}/{}_{}", dir_save, timestamp, file_path);
+    let path = std::path::Path::new(full_file_path.as_str());
+    let prefix = path.parent().unwrap();
+    std::fs::create_dir_all(prefix).unwrap();
     // println!("directory_path: {:?}", directory_path);
     // println!("file_name_with_timestamp: {:?}", file_name_with_timestamp);
     println!("full_file_path: {:?}", full_file_path);

@@ -45,3 +45,32 @@ export interface Product {
   created_at?: string;
 }
 
+export interface UpdateProductToServer {
+  id: number;
+  name: string;
+  unit: string;
+  gold_weight?: string;
+  gold_age?: string;
+  stone_weight?: string;
+  total_weight: number;
+  note?: string;
+  wage?: string;
+  stone_price?: string;
+  price?: string;
+  quantity: number;
+  category_id: number;
+  image: ImageToServer | null;
+}
+
+export interface ImageToServer {
+  image_data: number[];
+  file_name: string;
+}
+
+export interface GetProductPaginate {
+  products: Product[];
+  page: number;
+  limit: number;
+  total_page: number;
+  total_count: number;
+}
