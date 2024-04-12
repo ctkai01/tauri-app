@@ -6,10 +6,15 @@ mod database;
 mod model;
 mod state;
 mod util;
-use model::{Category, CreateCategory, CreateProduct, Product, GetProductsByCategory, UpdateCategory};
+use model::{
+    Category, CreateCategory, CreateProduct, GetProductsByCategory, Product, UpdateCategory,
+};
 use state::{AppState, ServiceAccess};
-use std::{fs::{self, File}, sync::{Arc, Mutex}};
-use tauri::{api::path::BaseDirectory, utils::config, AppHandle, Manager, State, Config};
+use std::{
+    fs::{self, File},
+    sync::{Arc, Mutex},
+};
+use tauri::{api::path::BaseDirectory, utils::config, AppHandle, Config, Manager, State};
 use util::save_image;
 
 use crate::model::{DeleteCategory, UpdateProduct};
@@ -34,13 +39,11 @@ fn create_product(app_handle: AppHandle, data: String) -> Result<i64, String> {
     let image_path = match &create_product.image {
         Some(data) => {
             match save_image(&data.file_name, &data.image_data, app_handle.path_image()) {
-                Ok(path) =>  path,
+                Ok(path) => path,
                 Err(e) => return Err(e), // Propagate the error if save_image fails
             }
         }
-        None => {
-             "".to_string()
-        }
+        None => "".to_string(),
     };
 
     let id = app_handle
@@ -51,32 +54,46 @@ fn create_product(app_handle: AppHandle, data: String) -> Result<i64, String> {
 }
 
 #[tauri::command]
-fn update_product(app_handle: AppHandle, data: String) -> Result<i64, String> {
+fn update_product(app_handle: AppHandle, data: String) -> Result<(), String> {
     // Should handle errors instead of unwrapping here
-    let create_product: UpdateProduct = serde_json::from_str(&data).map_err(|e| e.to_string())?;
-    let image_path = match &create_product.image {
+    let update_product: UpdateProduct = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+
+    let product = app_handle
+        .db(|db| database::get_product_by_id(db, update_product.id))
+        .unwrap();
+
+    if product.is_none() {
+        return Err(String::from("Product not found"))
+    }
+
+    let image_path = match &update_product.image {
         Some(data) => {
+            //Remove old
+            if product.unwrap().image.is_none() {
+                
+            }
+
             match save_image(&data.file_name, &data.image_data, app_handle.path_image()) {
-                Ok(path) =>  path,
+                Ok(path) => path,
                 Err(e) => return Err(e), // Propagate the error if save_image fails
             }
         }
         None => {
-             "".to_string()
-        }
+            product.unwrap().image.unwrap_or_default()
+        },
     };
 
-    let id = app_handle
-        .db(|db| database::add_product(create_product, image_path, db))
+    app_handle
+        .db(|db| database::update_product(update_product, db, image_path))
         .unwrap();
-    println!("ID: {}", id);
-    Ok(id)
+    Ok(())
 }
 
 #[tauri::command]
 fn get_product_by_category(app_handle: AppHandle, data: String) -> Result<Vec<Product>, String> {
     // Should handle errors instead of unwrapping here
-    let get_category_data: GetProductsByCategory = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    let get_category_data: GetProductsByCategory =
+        serde_json::from_str(&data).map_err(|e| e.to_string())?;
 
     let products = app_handle
         .db(|db| database::get_products_by_category_id_paginate(db, get_category_data))
@@ -104,7 +121,7 @@ fn get_categories_all(app_handle: AppHandle) -> Result<Vec<Category>, String> {
     // Should handle errors instead of unwrapping here
     // let create_category: CreateCategory = serde_json::from_str(&data).map_err(|e| e.to_string())?;
     let categories = app_handle.db(|db| database::get_all_category(db)).unwrap();
-    
+
     // let items = app_handle.db(|db| database::get_all(db)).unwrap();
     Ok(categories)
 }
@@ -139,7 +156,7 @@ fn delete_category(app_handle: AppHandle, data: String) -> Result<(), String> {
         Ok(_) => {}
         Err(err) => return Err(String::from(err.to_string())),
     }
-    
+
     Ok(())
 }
 fn main() {
@@ -150,16 +167,24 @@ fn main() {
         })
         .setup(|app| {
             let handle = app.handle();
-          
+
             let app_state: State<AppState> = handle.state();
             let db =
                 database::initialize_database(&handle).expect("Database initialize should succeed");
             println!("{:?}", db);
             *app_state.db.lock().unwrap() = Some(db);
-            let identifier = handle.path_resolver().app_data_dir().unwrap_or(std::path::PathBuf::new()).to_string_lossy().to_string().split("/").last().unwrap().to_string();
+            let identifier = handle
+                .path_resolver()
+                .app_data_dir()
+                .unwrap_or(std::path::PathBuf::new())
+                .to_string_lossy()
+                .to_string()
+                .split("/")
+                .last()
+                .unwrap()
+                .to_string();
             *app_state.path_image.lock().unwrap() = identifier;
 
-            
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -169,7 +194,8 @@ fn main() {
             get_categories_all,
             delete_category,
             create_product,
-            get_product_by_category
+            get_product_by_category,
+            update_product
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

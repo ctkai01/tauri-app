@@ -162,7 +162,7 @@ pub fn update_product(
     let mut statement = db.prepare(
         "UPDATE products SET name = @name, unit = @unit, category_id = @category_id, image = @image, gold_weight = @gold_weight, note = @note, age_gold = @age_gold, stone_weight = @stone_weight, total_weight = @total_weight, wage = @wage, stone_price = @stone_price, price = @price, quantity = @quantity WHERE id = @id",
     )?;
-    statement.execute(named_params! {"@name": data.name, "@unit": data.unit,  "@category_id": data.category_id, "@image": image_path,  "@gold_weight": data.gold_weight.unwrap_or_default(), "@note": data.note.unwrap_or_default(), "@age_gold": data.gold_age.unwrap_or_default(), "@stone_weight": data.stone_weight.unwrap_or_default(),  "@total_weight": data.total_weight.unwrap_or_default(),  "@wage": data.wage.unwrap_or_default(), "@stone_price": data.stone_price.unwrap_or_default(), "@price": data.price.unwrap_or_default(), "@quantity": data.quantity.unwrap_or_default(),  "@id": data.id })?;
+    statement.execute(named_params! {"@name": data.name, "@unit": data.unit,  "@category_id": data.category_id, "@image": image_path,  "@gold_weight": data.gold_weight.unwrap_or_default(), "@note": data.note.unwrap_or_default(), "@age_gold": data.gold_age.unwrap_or_default(), "@stone_weight": data.stone_weight.unwrap_or_default(),  "@total_weight": data.total_weight,  "@wage": data.wage.unwrap_or_default(), "@stone_price": data.stone_price.unwrap_or_default(), "@price": data.price.unwrap_or_default(), "@quantity": data.quantity,  "@id": data.id })?;
 
     Ok(())
 }
