@@ -4,8 +4,9 @@ use crate::model::Product;
 use xlsxwriter::prelude::*;
 use xlsxwriter::{Format, Workbook, Worksheet};
 // const FONT_SIZE: f64 = 12.0;
-pub fn create_xlsx(products: Vec<Product>) -> Result<(), XlsxError> {
-    let workbook = Workbook::new("simple1.xlsx")?;
+pub fn create_xlsx(products: Vec<Product>, path: String) -> Result<(), XlsxError> {
+    let path_save = format!("{}/gold.xlsx", path);
+    let workbook = Workbook::new(path_save.as_str())?;
     let mut sheet1 = workbook.add_worksheet(None)?;
     sheet1.write_string(0, 0, "Tên", None)?;
     sheet1.write_string(0, 1, "Tổng lượng đá", None)?;

@@ -217,8 +217,8 @@ fn delete_product(app_handle: AppHandle, data: String) -> Result<(), String> {
 #[tauri::command]
 fn print_excel(app_handle: AppHandle, data: String) -> Result<(), String> {
     let print_product: PrintProduct = serde_json::from_str(&data).map_err(|e| e.to_string())?;
-
-    match excel::create_xlsx(print_product.products) {
+    let path: String = app_handle.path_image();
+    match excel::create_xlsx(print_product.products, path) {
         Ok(()) => {
             let output =
                 Command::new("C:\\Program Files (x86)\\Seagull\\BarTender Suite\\bartend.exe")
