@@ -1,27 +1,19 @@
 export interface CreateProduct {
   name: string;
-  unit: string;
   goldWeight?: string;
-  goldAge?: string;
+  goldPercent?: string;
   stoneWeight?: string;
-  note?: string;
   wage?: string;
-  stonePrice?: string;
-  price?: string;
   quantity: string;
   categoryID: number;
 }
 
 export interface UpdateProduct {
   name: string;
-  unit: string;
   goldWeight?: string;
-  goldAge?: string;
+  goldPercent?: string;
   stoneWeight?: string;
-  note?: string;
   wage?: string;
-  stonePrice?: string;
-  price?: string;
   quantity: string;
   categoryID: number;
 }
@@ -29,15 +21,10 @@ export interface UpdateProduct {
 export interface Product {
   id: number;
   name: string;
-  unit: string;
   gold_weight?: string;
-  gold_age?: string;
+  gold_percent?: string;
   stone_weight?: string;
-  note?: string;
   wage?: string;
-  stone_price?: string;
-  image?: string;
-  price?: string;
   total_weight: string;
   quantity: number;
   category_id: number;
@@ -48,18 +35,13 @@ export interface Product {
 export interface UpdateProductToServer {
   id: number;
   name: string;
-  unit: string;
   gold_weight?: string;
-  gold_age?: string;
+  gold_percent?: string;
   stone_weight?: string;
   total_weight: number;
-  note?: string;
   wage?: string;
-  stone_price?: string;
-  price?: string;
   quantity: number;
   category_id: number;
-  image: ImageToServer | null;
 }
 
 export interface ImageToServer {

@@ -52,9 +52,9 @@ export default function TableContent(props: ITableContentProps) {
               <Checkbox />
             </Table.HeadCell>
             <Table.HeadCell>Tên hàng</Table.HeadCell>
-            <Table.HeadCell>Hình ảnh</Table.HeadCell>
+            {/* <Table.HeadCell>Hình ảnh</Table.HeadCell> */}
             <Table.HeadCell>Số lượng</Table.HeadCell>
-            <Table.HeadCell>Giá</Table.HeadCell>
+            {/* <Table.HeadCell>Giá</Table.HeadCell> */}
             <Table.HeadCell>
               {/* <span className="sr-only">Edit</span> */}
               Hành động
@@ -76,7 +76,7 @@ export default function TableContent(props: ITableContentProps) {
                   <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                     {product.name}
                   </Table.Cell>
-                  <Table.Cell>
+                  {/* <Table.Cell>
                     {product.image && (
                       <img
                         className=" h-[80px]"
@@ -88,15 +88,15 @@ export default function TableContent(props: ITableContentProps) {
                     {!product.image && (
                       <img className=" h-[80px]" src="/empty.jpg" />
                     )}
-                  </Table.Cell>
+                  </Table.Cell> */}
                   <Table.Cell>{product.quantity}</Table.Cell>
-                  <Table.Cell>
+                  {/* <Table.Cell>
                     {calculateTotalPrice([
                       product.price ?? "0",
                       product.stone_price ?? "0",
                       product.wage ?? "0",
                     ])}
-                  </Table.Cell>
+                  </Table.Cell> */}
                   <Table.Cell>
                     <div className="flex  gap-1">
                       <Tooltip content="Chi tiết hàng hóa">

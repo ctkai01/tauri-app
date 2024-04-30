@@ -34,9 +34,10 @@ export interface IUpdateProductModalProps {
   isOpen: boolean;
   handleModal: (state: boolean) => void;
   productChoose: Product;
+  categoryChose: Category
   handleUpdateProduct: (
     data: UpdateProduct,
-    imageFile: File | undefined,
+    // imageFile: File | undefined,
     totalWeight: string
   ) => void;
   // handleAddProduct: (
@@ -57,14 +58,14 @@ const customThemeModal: CustomFlowbiteTheme = {
 };
 
 export default function UpdateProductModal(props: IUpdateProductModalProps) {
-  const { isOpen, handleModal, productChoose, handleUpdateProduct } = props;
-  const [imageFile, setImageFile] = useState<File | undefined>(undefined);
-  const [imagePreview, setImagePreview] = useState(
-    productChoose.image ? convertFileSrc(productChoose.image) : "/empty.jpg"
-  );
+  const { isOpen, handleModal, categoryChose, productChoose, handleUpdateProduct } = props;
+  // const [imageFile, setImageFile] = useState<File | undefined>(undefined);
+  // const [imagePreview, setImagePreview] = useState(
+  //   productChoose.image ? convertFileSrc(productChoose.image) : "/empty.jpg"
+  // );
   const [totalWeight, setTotalWeight] = useState("");
-  const inputImageRef = useRef<HTMLInputElement>(null);
-  const [errorImage, setErrorImage] = useState("");
+  // const inputImageRef = useRef<HTMLInputElement>(null);
+  // const [errorImage, setErrorImage] = useState("");
   const [categoriesMenu, setCategoriesMenu] = useState<Category[]>([]);
 
   const {
@@ -79,15 +80,15 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
     resolver: yupResolver(schemeUpdateProduct),
     defaultValues: {
       categoryID: productChoose.category_id,
-      goldAge: productChoose.gold_age,
+      goldPercent: productChoose.gold_percent,
       goldWeight: productChoose.gold_weight,
       name: productChoose.name,
-      note: productChoose.note,
-      price: productChoose.price,
+      // note: productChoose.note,
+      // price: productChoose.price,
       quantity: `${productChoose.quantity}`,
-      stonePrice: productChoose.stone_price,
+      // stonePrice: productChoose.stone_price,
       stoneWeight: productChoose.stone_weight,
-      unit: productChoose.unit,
+      // unit: productChoose.unit,
       wage: productChoose.wage,
     },
     // values: {
@@ -120,7 +121,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
   }, [goldWeight, stoneWeight]);
 
   const onSubmit = async (data: UpdateProduct) => {
-    handleUpdateProduct(data, imageFile, totalWeight);
+    handleUpdateProduct(data, totalWeight);
     // handleAddProduct(data, imageFile, totalWeight);
     // handleAddCategory(data);
     // reset();
@@ -137,36 +138,36 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
   //   const value = input.value.replace(/\D/g, ""); // Remove non-digit characters
   //   input.value = new Intl.NumberFormat().format(value); // Format the number with commas
   // };
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    try {
-      const data: UpdateAvatar = {
-        image: e.target.files ? e.target.files[0] : undefined,
-      };
-      const dataValidate = await schemeUpdateImage.validate(data);
-      const newFile = dataValidate.image;
-      setErrorImage("");
-      setImageFile(newFile);
+  // const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  //   try {
+  //     const data: UpdateAvatar = {
+  //       image: e.target.files ? e.target.files[0] : undefined,
+  //     };
+  //     const dataValidate = await schemeUpdateImage.validate(data);
+  //     const newFile = dataValidate.image;
+  //     setErrorImage("");
+  //     setImageFile(newFile);
 
-      if (newFile) {
-        setImagePreview(URL.createObjectURL(newFile));
-      }
-    } catch (e) {
-      if (e instanceof ValidationError) {
-        // setValue("image", undefined);
-        setErrorImage(e.message);
-      }
-    }
-  };
+  //     if (newFile) {
+  //       setImagePreview(URL.createObjectURL(newFile));
+  //     }
+  //   } catch (e) {
+  //     if (e instanceof ValidationError) {
+  //       // setValue("image", undefined);
+  //       setErrorImage(e.message);
+  //     }
+  //   }
+  // };
 
-  const handleRemoveImage = () => {
-    setImagePreview("");
-    setImageFile(undefined);
-    setErrorImage("");
+  // const handleRemoveImage = () => {
+  //   setImagePreview("");
+  //   setImageFile(undefined);
+  //   setErrorImage("");
 
-    if (inputImageRef && inputImageRef.current) {
-      inputImageRef.current.value = "";
-    }
-  };
+  //   if (inputImageRef && inputImageRef.current) {
+  //     inputImageRef.current.value = "";
+  //   }
+  // };
   return (
     <Flowbite theme={{ theme: customThemeModal }}>
       <Modal
@@ -211,7 +212,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                 )}
               </div>
 
-              <div className=" mb-4">
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label htmlFor="unit" className=" block" value="Đơn vị" />
@@ -234,7 +235,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                 ) : (
                   <></>
                 )}
-              </div>
+              </div> */}
               <div className="mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
@@ -251,8 +252,8 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                     color={errors.name ? "failure" : ""}
                     className="w-full"
                   >
-                    {/* <option value="0"></option> */}
-                    {categoriesMenu.map((category) => {
+                    <option selected value={categoryChose.id}>{categoryChose.name}</option>
+                    {/* {categoriesMenu.map((category) => {
                       return (
                         <option
                           value={category.id}
@@ -261,7 +262,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                           {category.name}
                         </option>
                       );
-                    })}
+                    })} */}
                   </Select>
                 </div>
 
@@ -273,7 +274,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                   <></>
                 )}
               </div>
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label htmlFor="image" className=" block" value="Ảnh" />
@@ -306,7 +307,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                     )}
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
@@ -340,26 +341,26 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label
-                      htmlFor="goldAge"
+                      htmlFor="goldPercent"
                       className=" block"
-                      value="Tuổi vàng"
+                      value="Hàm lượng vàng"
                     />
                   </div>
 
                   <TextInput
-                    id="goldAge"
-                    type="number"
-                    step="any"
+                    id="goldPercent"
+                    type="text"
+                    // step="any"
                     placeholder=""
                     className="flex-1"
-                    color={errors.goldAge ? "failure" : ""}
-                    {...register("goldAge")}
+                    color={errors.goldPercent ? "failure" : ""}
+                    {...register("goldPercent")}
                   />
                 </div>
 
-                {errors.goldAge ? (
+                {errors.goldPercent ? (
                   <div className="text-red-500 text-sm mt-1">
-                    <span>{errors.goldAge.message}</span>
+                    <span>{errors.goldPercent.message}</span>
                   </div>
                 ) : (
                   <></>
@@ -456,7 +457,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                   <></>
                 )}
               </div>
-              <div className=" mb-4">
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label
@@ -494,8 +495,8 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                 ) : (
                   <></>
                 )}
-              </div>
-              <div className=" mb-4">
+              </div> */}
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label
@@ -530,7 +531,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                 ) : (
                   <></>
                 )}
-              </div>
+              </div> */}
               <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
@@ -560,7 +561,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                   <></>
                 )}
               </div>
-              <div className=" mb-4">
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label htmlFor="note" className=" block" value="Ghi chú" />
@@ -581,7 +582,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                 ) : (
                   <></>
                 )}
-              </div>
+              </div> */}
             </div>
             <div className="flex text-xs justify-center gap-4 mt-3">
               <Button size="sm" color="success" type="submit">

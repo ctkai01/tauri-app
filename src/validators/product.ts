@@ -11,22 +11,25 @@ export const schemeCreateProduct: Yup.ObjectSchema<CreateProduct> = Yup.object({
     .required("Tên mặt hàng là bắt buộc")
     .min(1, "Tên mặt hàng  nhỏ hơn 1 ký tự")
     .max(50, "Tên mặt hàng  lớn hơn 50 ký tự"),
-  unit: Yup.string()
-    .required("Đơn vi là bắt buộc")
-    .min(1, "Đơn vi nhỏ hơn 1 ký tự")
-    .max(50, "Đơn vi lớn hơn 30 ký tự"),
+  // unit: Yup.string()
+  //   .required("Đơn vi là bắt buộc")
+  //   .min(1, "Đơn vi nhỏ hơn 1 ký tự")
+  //   .max(50, "Đơn vi lớn hơn 30 ký tự"),
 
   goldWeight: Yup.string(),
-  goldAge: Yup.string(),
+  goldPercent: Yup.string(),
   stoneWeight: Yup.string(),
   categoryID: Yup.number()
     .positive("Nhóm hàng là bắt buộc")
     .required("Nhóm hàng là bắt buộc"),
   wage: Yup.string(),
-  stonePrice: Yup.string(),
-  quantity: Yup.string().required("Số lượng là bắt buộc").min(0),
-  price: Yup.string(),
-  note: Yup.string().optional().max(50, "Ghi chú lớn hơn 50 ký tự"),
+  // stonePrice: Yup.string(),
+  quantity: Yup.number()
+    .typeError("Số lượng phải là số")
+    .required("Số lượng là bắt buộc")
+    .min(1, "Số lượng ít nhât là 1"),
+  // price: Yup.string(),
+  // note: Yup.string().optional().max(50, "Ghi chú lớn hơn 50 ký tự"),
 });
 
 export const schemeUpdateProduct: Yup.ObjectSchema<UpdateProduct> = Yup.object({
@@ -34,22 +37,25 @@ export const schemeUpdateProduct: Yup.ObjectSchema<UpdateProduct> = Yup.object({
     .required("Tên mặt hàng là bắt buộc")
     .min(1, "Tên mặt hàng  nhỏ hơn 1 ký tự")
     .max(50, "Tên mặt hàng  lớn hơn 50 ký tự"),
-  unit: Yup.string()
-    .required("Đơn vi là bắt buộc")
-    .min(1, "Đơn vi nhỏ hơn 1 ký tự")
-    .max(50, "Đơn vi lớn hơn 30 ký tự"),
+  // unit: Yup.string()
+  //   .required("Đơn vi là bắt buộc")
+  //   .min(1, "Đơn vi nhỏ hơn 1 ký tự")
+  //   .max(50, "Đơn vi lớn hơn 30 ký tự"),
 
   goldWeight: Yup.string(),
-  goldAge: Yup.string(),
+  goldPercent: Yup.string(),
   stoneWeight: Yup.string(),
   categoryID: Yup.number()
     .positive("Nhóm hàng là bắt buộc")
     .required("Nhóm hàng là bắt buộc"),
   wage: Yup.string(),
-  stonePrice: Yup.string(),
-  quantity: Yup.string().required("Số lượng là bắt buộc"),
-  price: Yup.string(),
-  note: Yup.string().optional().max(50, "Ghi chú lớn hơn 50 ký tự"),
+  // stonePrice: Yup.string(),
+  quantity: Yup.number()
+    .typeError("Số lượng phải là số")
+    .required("Số lượng là bắt buộc")
+    .min(1, "Số lượng ít nhât là 1"),
+  // price: Yup.string(),
+  // note: Yup.string().optional().max(50, "Ghi chú lớn hơn 50 ký tự"),
 });
 
 

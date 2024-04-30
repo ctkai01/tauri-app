@@ -9,11 +9,12 @@ pub fn create_xlsx(products: Vec<Product>, path: String) -> Result<(), XlsxError
     let workbook = Workbook::new(path_save.as_str())?;
     let mut sheet1 = workbook.add_worksheet(None)?;
     sheet1.write_string(0, 0, "Tên", None)?;
-    sheet1.write_string(0, 1, "Tổng lượng đá", None)?;
-    sheet1.write_string(0, 2, "Tổng lượng vàng", None)?;
-    sheet1.write_string(0, 3, "Tổng lượng tổng", None)?;
-    sheet1.write_string(0, 4, "Công", None)?;
-    sheet1.write_string(0, 5, "Số lượng", None)?;
+    sheet1.write_string(0, 1, "Hàm lượng vàng", None)?;
+    sheet1.write_string(0, 2, "Tổng lượng đá", None)?;
+    sheet1.write_string(0, 3, "Tổng lượng vàng", None)?;
+    sheet1.write_string(0, 4, "Tổng lượng tổng", None)?;
+    sheet1.write_string(0, 5, "Công", None)?;
+    sheet1.write_string(0, 6, "Số lượng", None)?;
     let mut row = 1;
     for product in products {
         let stone_weight_data = format!(
@@ -23,19 +24,26 @@ pub fn create_xlsx(products: Vec<Product>, path: String) -> Result<(), XlsxError
         let gold_weight_data =
             format!("TLV: {}", product.gold_weight.unwrap_or("0.00".to_string()));
         let total_weight_data = format!("TLT: {}", product.total_weight);
+        let gold_percent_data = format!("HLV.au: {}", product.gold_percent.unwrap_or("0".to_string()));
         let wage_data = format!("C: {}", product.wage.unwrap_or("0.00".to_string()));
         let quantity_data = format!("{}", product.quantity);
         sheet1.write_string(row, 0, &product.name, None)?;
-        sheet1.write_string(
+           sheet1.write_string(
             row,
             1,
+            gold_percent_data.as_str(),
+            None,
+        )?;
+        sheet1.write_string(
+            row,
+            2,
             stone_weight_data.as_str(),
             None,
         )?;
-        sheet1.write_string(row, 2, gold_weight_data.as_str(), None)?;
-        sheet1.write_string(row, 3, total_weight_data.as_str(), None)?;
-        sheet1.write_string(row, 4, wage_data.as_str(), None)?;
-        sheet1.write_string(row, 5, quantity_data.as_str(), None)?;
+        sheet1.write_string(row, 3, gold_weight_data.as_str(), None)?;
+        sheet1.write_string(row, 4, total_weight_data.as_str(), None)?;
+        sheet1.write_string(row, 5, wage_data.as_str(), None)?;
+        sheet1.write_string(row, 6, quantity_data.as_str(), None)?;
 
         row += 1
     }

@@ -26,7 +26,7 @@ export interface IAddProductModalProps {
   handleModal: (state: boolean) => void;
   handleAddProduct: (
     createProduct: CreateProduct,
-    imageFile: File | undefined,
+    // imageFile: File | undefined,
     totalWeight: string
   ) => void;
   // handleAddCategory: (data: CreateCategory) => void;
@@ -43,11 +43,11 @@ const customThemeModal: CustomFlowbiteTheme = {
 
 export default function AddProductModal(props: IAddProductModalProps) {
   const { isOpen, categoryChose, handleModal, handleAddProduct } = props;
-  const [imageFile, setImageFile] = useState<File | undefined>(undefined);
-  const [imagePreview, setImagePreview] = useState("");
+  // const [imageFile, setImageFile] = useState<File | undefined>(undefined);
+  // const [imagePreview, setImagePreview] = useState("");
   const [totalWeight, setTotalWeight] = useState("");
-  const inputImageRef = useRef<HTMLInputElement>(null);
-  const [errorImage, setErrorImage] = useState("");
+  // const inputImageRef = useRef<HTMLInputElement>(null);
+  // const [errorImage, setErrorImage] = useState("");
   const [categoriesMenu, setCategoriesMenu] = useState<Category[]>([]);
 
   const {
@@ -90,7 +90,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
   }, [goldWeight, stoneWeight]);
 
   const onSubmit = async (data: CreateProduct) => {
-    handleAddProduct(data, imageFile, totalWeight);
+    handleAddProduct(data, totalWeight);
     // handleAddCategory(data);
     // reset();
     // toast(<div className="font-bold">Thêm mới nhóm hàng thành công</div>, {
@@ -106,36 +106,36 @@ export default function AddProductModal(props: IAddProductModalProps) {
   //   const value = input.value.replace(/\D/g, ""); // Remove non-digit characters
   //   input.value = new Intl.NumberFormat().format(value); // Format the number with commas
   // };
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    try {
-      const data: UpdateAvatar = {
-        image: e.target.files ? e.target.files[0] : undefined,
-      };
-      const dataValidate = await schemeUpdateImage.validate(data);
-      const newFile = dataValidate.image;
-      setErrorImage("");
-      setImageFile(newFile);
+  // const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  //   try {
+  //     const data: UpdateAvatar = {
+  //       image: e.target.files ? e.target.files[0] : undefined,
+  //     };
+  //     const dataValidate = await schemeUpdateImage.validate(data);
+  //     const newFile = dataValidate.image;
+  //     setErrorImage("");
+  //     setImageFile(newFile);
 
-      if (newFile) {
-        setImagePreview(URL.createObjectURL(newFile));
-      }
-    } catch (e) {
-      if (e instanceof ValidationError) {
-        // setValue("image", undefined);
-        setErrorImage(e.message);
-      }
-    }
-  };
+  //     if (newFile) {
+  //       setImagePreview(URL.createObjectURL(newFile));
+  //     }
+  //   } catch (e) {
+  //     if (e instanceof ValidationError) {
+  //       // setValue("image", undefined);
+  //       setErrorImage(e.message);
+  //     }
+  //   }
+  // };
 
-  const handleRemoveImage = () => {
-    setImagePreview("");
-    setImageFile(undefined);
-    setErrorImage("");
+  // const handleRemoveImage = () => {
+  //   setImagePreview("");
+  //   setImageFile(undefined);
+  //   setErrorImage("");
 
-    if (inputImageRef && inputImageRef.current) {
-      inputImageRef.current.value = "";
-    }
-  };
+  //   if (inputImageRef && inputImageRef.current) {
+  //     inputImageRef.current.value = "";
+  //   }
+  // };
   return (
     <Flowbite theme={{ theme: customThemeModal }}>
       <Modal
@@ -180,7 +180,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
                 )}
               </div>
 
-              <div className=" mb-4">
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label htmlFor="unit" className=" block" value="Đơn vị" />
@@ -203,7 +203,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
                 ) : (
                   <></>
                 )}
-              </div>
+              </div> */}
               <div className="mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
@@ -220,16 +220,14 @@ export default function AddProductModal(props: IAddProductModalProps) {
                     color={errors.name ? "failure" : ""}
                     className="w-full"
                   >
-                    <option value="0"></option>
-                    {categoriesMenu.map((category) => {
+                    <option selected value={categoryChose?.id}>
+                      {categoryChose?.name}
+                    </option>
+                    {/* {categoriesMenu.map((category) => {
                       return (
-                        <option
-                          value={category.id}
-                        >
-                          {category.name}
-                        </option>
+                        <option value={category.id}>{category.name}</option>
                       );
-                    })}
+                    })} */}
                   </Select>
                 </div>
 
@@ -241,7 +239,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
                   <></>
                 )}
               </div>
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label htmlFor="image" className=" block" value="Ảnh" />
@@ -273,7 +271,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
                     )}
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
@@ -307,26 +305,26 @@ export default function AddProductModal(props: IAddProductModalProps) {
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label
-                      htmlFor="goldAge"
+                      htmlFor="goldPercent"
                       className=" block"
-                      value="Tuổi vàng"
+                      value="Hàm lượng vàng"
                     />
                   </div>
 
                   <TextInput
                     id="goldAge"
-                    type="number"
-                    step="any"
+                    type="text"
+                    // step="any"
                     placeholder=""
                     className="flex-1"
-                    color={errors.goldAge ? "failure" : ""}
-                    {...register("goldAge")}
+                    color={errors.goldPercent ? "failure" : ""}
+                    {...register("goldPercent")}
                   />
                 </div>
 
-                {errors.goldAge ? (
+                {errors.goldPercent ? (
                   <div className="text-red-500 text-sm mt-1">
-                    <span>{errors.goldAge.message}</span>
+                    <span>{errors.goldPercent.message}</span>
                   </div>
                 ) : (
                   <></>
@@ -423,7 +421,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
                   <></>
                 )}
               </div>
-              <div className=" mb-4">
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label
@@ -461,8 +459,8 @@ export default function AddProductModal(props: IAddProductModalProps) {
                 ) : (
                   <></>
                 )}
-              </div>
-              <div className=" mb-4">
+              </div> */}
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label
@@ -497,7 +495,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
                 ) : (
                   <></>
                 )}
-              </div>
+              </div> */}
               <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
@@ -527,7 +525,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
                   <></>
                 )}
               </div>
-              <div className=" mb-4">
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label htmlFor="note" className=" block" value="Ghi chú" />
@@ -548,7 +546,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
                 ) : (
                   <></>
                 )}
-              </div>
+              </div> */}
             </div>
             <div className="flex text-xs justify-center gap-4 mt-3">
               <Button size="sm" color="success" type="submit">

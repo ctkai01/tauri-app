@@ -82,22 +82,24 @@ export default function HomeAction(props: IHomeActionProps) {
   }
 
   const handleToggleCheckBox = (id: number) => {
-    setCheckboxes(checkboxes => {
+    setCheckboxes((checkboxes) => {
       const checkboxesUpdate = [...checkboxes];
 
-      const indexCheckBox = checkboxesUpdate.findIndex(checkbox => checkbox.product.id === id)
+      const indexCheckBox = checkboxesUpdate.findIndex(
+        (checkbox) => checkbox.product.id === id
+      );
 
       if (indexCheckBox !== -1) {
-        const checkboxUpdate = {...checkboxesUpdate[indexCheckBox]}
+        const checkboxUpdate = { ...checkboxesUpdate[indexCheckBox] };
 
-        checkboxUpdate.isCheck = !checkboxUpdate.isCheck
+        checkboxUpdate.isCheck = !checkboxUpdate.isCheck;
         checkboxesUpdate[indexCheckBox] = checkboxUpdate;
 
         return checkboxesUpdate;
       }
-      return checkboxes
-    })
-  }
+      return checkboxes;
+    });
+  };
 
   React.useEffect(() => {
     const fetchProducts = async () => {
@@ -130,7 +132,9 @@ export default function HomeAction(props: IHomeActionProps) {
 
   React.useEffect(() => {
     const data: CheckboxProduct[] = products.map((product) => {
-      const checkExistBox = checkboxes.find((item) => item.product.id === product.id);
+      const checkExistBox = checkboxes.find(
+        (item) => item.product.id === product.id
+      );
 
       return {
         product: product,
@@ -142,37 +146,34 @@ export default function HomeAction(props: IHomeActionProps) {
 
   const handleAddProduct = async (
     createProduct: CreateProduct,
-    imageFile: File | undefined,
+    // imageFile: File | undefined,
     totalWeight: string
   ) => {
     try {
       // Add to DB
-      let image = null;
-      if (imageFile) {
-        const fileData: any = await fileToArrayBuffer(imageFile);
-        const fileName = imageFile.name;
+      // let image = null;
+      // if (imageFile) {
+      //   const fileData: any = await fileToArrayBuffer(imageFile);
+      //   const fileName = imageFile.name;
 
-        image = {
-          image_data: Array.from(new Uint8Array(fileData)), // Convert ArrayBuffer to array of bytes
-          file_name: fileName,
-        };
-      }
+      //   image = {
+      //     image_data: Array.from(new Uint8Array(fileData)), // Convert ArrayBuffer to array of bytes
+      //     file_name: fileName,
+      //   };
+      // }
 
       let totalWeightNum = parseFloat(totalWeight);
 
       const createdProduct: Product = await invoke("create_product", {
         data: JSON.stringify({
-          image,
+          // image,
           name: createProduct.name,
-          unit: createProduct.unit,
+          // unit: createProduct.unit,
           gold_weight: createProduct.goldWeight,
-          gold_age: createProduct.goldAge,
+          gold_percent: createProduct.goldPercent,
           stone_weight: createProduct.stoneWeight,
-          note: createProduct.note,
           wage: createProduct.wage,
           total_weight: totalWeightNum,
-          stone_price: createProduct.stonePrice,
-          price: createProduct.price,
           quantity: +createProduct.quantity,
           category_id: createProduct.categoryID,
         }),
@@ -233,16 +234,14 @@ export default function HomeAction(props: IHomeActionProps) {
               };
             });
           }
-        } else {
-          setProducts((products) => {
-            const productsUpdate = [...products];
-
-            return productsUpdate.filter(
-              (product) => product.id !== productChoose.id
-            );
-          });
         }
+        setProducts((products) => {
+          const productsUpdate = [...products];
 
+          return productsUpdate.filter(
+            (product) => product.id !== productChoose.id
+          );
+        });
         handleActionDeleteProductModal(false);
         toast(<div className="font-bold">Xóa nhóm hàng hóa thành công</div>, {
           draggable: false,
@@ -263,38 +262,38 @@ export default function HomeAction(props: IHomeActionProps) {
 
   const handleUpdateProduct = async (
     updateProduct: UpdateProduct,
-    imageFile: File | undefined,
+    // imageFile: File | undefined,
     totalWeight: string
   ) => {
     try {
       if (productChoose) {
-        let image: ImageToServer | null = null;
-        if (imageFile) {
-          const fileData: any = await fileToArrayBuffer(imageFile);
-          const fileName = imageFile.name;
+        // let image: ImageToServer | null = null;
+        // if (imageFile) {
+        //   const fileData: any = await fileToArrayBuffer(imageFile);
+        //   const fileName = imageFile.name;
 
-          image = {
-            image_data: Array.from(new Uint8Array(fileData)), // Convert ArrayBuffer to array of bytes
-            file_name: fileName,
-          };
-        }
+        //   image = {
+        //     image_data: Array.from(new Uint8Array(fileData)), // Convert ArrayBuffer to array of bytes
+        //     file_name: fileName,
+        //   };
+        // }
 
         let totalWeightNum = parseFloat(totalWeight);
         const dataUpdate: UpdateProductToServer = {
           id: productChoose.id,
           name: updateProduct.name,
-          unit: updateProduct.unit,
+          // unit: updateProduct.unit,
           gold_weight: updateProduct.goldWeight,
-          gold_age: updateProduct.goldAge,
+          gold_percent: updateProduct.goldPercent,
           stone_weight: updateProduct.stoneWeight,
-          note: updateProduct.note,
+          // note: updateProduct.note,
           wage: updateProduct.wage,
           total_weight: totalWeightNum,
-          stone_price: updateProduct.stonePrice,
-          price: updateProduct.price,
+          // stone_price: updateProduct.stonePrice,
+          // price: updateProduct.price,
           quantity: +updateProduct.quantity,
           category_id: updateProduct.categoryID,
-          image,
+          // image,
         };
         const productDataUpdate: Product = await invoke("update_product", {
           data: JSON.stringify(dataUpdate),
@@ -347,26 +346,28 @@ export default function HomeAction(props: IHomeActionProps) {
       };
     });
 
-  const handlePrint = async() => {
-    const productPrint = checkboxes.filter(checkbox => checkbox.isCheck).map(checkbox => checkbox.product)
+  const handlePrint = async () => {
+    const productPrint = checkboxes
+      .filter((checkbox) => checkbox.isCheck)
+      .map((checkbox) => checkbox.product);
 
     if (!productPrint.length) {
-       toast(<div className="font-bold">Vui lòng chọn hàng hóa để in</div>, {
-         draggable: false,
-         position: "top-right",
-         type: "warning",
-       });
-    }
-
+      toast(<div className="font-bold">Vui lòng chọn hàng hóa để in</div>, {
+        draggable: false,
+        position: "top-right",
+        type: "warning",
+      });
+    } else {
       await invoke("print_excel", {
         data: JSON.stringify({
           products: productPrint,
         }),
       });
-    console.log("Print: ", productPrint);
+      console.log("Print: ", productPrint);
+    }
   };
 
-  console.log("Checkbox:L ", checkboxes)
+  console.log("Checkbox:L ", checkboxes);
   return (
     <div className="flex flex-col h-full">
       {openAddProductModal && (
@@ -389,6 +390,7 @@ export default function HomeAction(props: IHomeActionProps) {
       {openUpdateProductModal && productChoose && (
         <UpdateProductModal
           productChoose={productChoose}
+          categoryChose={categoryChose}
           isOpen={openUpdateProductModal}
           handleUpdateProduct={handleUpdateProduct}
           // categoryChose={categoryChose}

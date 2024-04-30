@@ -7,6 +7,7 @@ mod excel;
 mod model;
 mod state;
 mod util;
+use std::env;
 use crate::model::{DeleteCategory, UpdateProduct};
 use model::{
     Category, CreateCategory, CreateProduct, DeleteProduct, GetProductsByCategory,
@@ -38,18 +39,9 @@ fn create_category(app_handle: AppHandle, data: String) -> Result<i64, String> {
 fn create_product(app_handle: AppHandle, data: String) -> Result<ProductCreateResponse, String> {
     // Should handle errors instead of unwrapping here
     let create_product: CreateProduct = serde_json::from_str(&data).map_err(|e| e.to_string())?;
-    let image_path = match &create_product.image {
-        Some(data) => {
-            match save_image(&data.file_name, &data.image_data, app_handle.path_image()) {
-                Ok(path) => path,
-                Err(e) => return Err(e), // Propagate the error if save_image fails
-            }
-        }
-        None => "".to_string(),
-    };
 
     let created_product = app_handle
-        .db(|db| database::add_product(&create_product, image_path, db))
+        .db(|db| database::add_product(&create_product, db))
         .unwrap();
     Ok(created_product)
 }
@@ -67,28 +59,8 @@ fn update_product(app_handle: AppHandle, data: String) -> Result<ProductUpdateRe
         return Err(String::from("Product not found"));
     }
 
-    let image_path = match &update_product.image {
-        Some(data) => {
-            //Remove old
-            if product.clone().unwrap().image.is_some() {
-                match fs::remove_file(product.unwrap().image.unwrap()) {
-                    Ok(_) => {}
-                    Err(err) => {
-                        println!("Error remove image: {:?}", err)
-                    }
-                }
-            }
-
-            match save_image(&data.file_name, &data.image_data, app_handle.path_image()) {
-                Ok(path) => path,
-                Err(e) => return Err(e), // Propagate the error if save_image fails
-            }
-        }
-        None => product.unwrap().image.unwrap_or_default(),
-    };
-
     let product_update = app_handle
-        .db(|db| database::update_product(&update_product, db, image_path))
+        .db(|db| database::update_product(&update_product, db))
         .unwrap();
     Ok(product_update)
 }
@@ -161,17 +133,17 @@ fn delete_category(app_handle: AppHandle, data: String) -> Result<(), String> {
         .db(|db| database::get_products_by_category_id(db, delete_category.id))
         .unwrap();
 
-    for product in products {
-        match product.image {
-            Some(path_image) => match fs::remove_file(path_image) {
-                Ok(_) => {}
-                Err(err) => {
-                    println!("Error remove image: {:?}", err)
-                }
-            },
-            None => {}
-        }
-    }
+    // for product in products {
+    //     match product.image {
+    //         Some(path_image) => match fs::remove_file(path_image) {
+    //             Ok(_) => {}
+    //             Err(err) => {
+    //                 println!("Error remove image: {:?}", err)
+    //             }
+    //         },
+    //         None => {}
+    //     }
+    // }
 
     let result = app_handle.db(|db| database::delete_category(delete_category, db));
 
@@ -195,14 +167,14 @@ fn delete_product(app_handle: AppHandle, data: String) -> Result<(), String> {
         return Err(String::from("Product not found"));
     }
 
-    if product.clone().unwrap().image.is_some() {
-        match fs::remove_file(product.unwrap().image.unwrap()) {
-            Ok(_) => {}
-            Err(err) => {
-                println!("Error remove image: {:?}", err)
-            }
-        }
-    }
+    // if product.clone().unwrap().image.is_some() {
+    //     match fs::remove_file(product.unwrap().image.unwrap()) {
+    //         Ok(_) => {}
+    //         Err(err) => {
+    //             println!("Error remove image: {:?}", err)
+    //         }
+    //     }
+    // }
 
     let result = app_handle.db(|db| database::delete_product(delete_product_data, db));
 
@@ -217,12 +189,21 @@ fn delete_product(app_handle: AppHandle, data: String) -> Result<(), String> {
 #[tauri::command]
 fn print_excel(app_handle: AppHandle, data: String) -> Result<(), String> {
     let print_product: PrintProduct = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+   
+    let user_dir = match env::var("USERPROFILE") {
+        Ok(profile) => profile,
+        Err(_) => {
+            "".to_string()
+        }
+    };
+   
     let path: String = app_handle.path_image();
     match excel::create_xlsx(print_product.products, path) {
         Ok(()) => {
             let output =
-                Command::new("C:\\Program Files (x86)\\Seagull\\BarTender Suite\\bartend.exe")
-                    .arg("C:\\Users\\Admin\\Downloads\\tem.btw")
+                Command::new("C:\\Program Files\\Seagull\\BarTender 2022\\bartend.exe")
+                    .arg(format!("{}\\AppData\\Roaming\\gold.tauri.dev\\tem.btw", user_dir))
+                    // .arg(format!("{}\\AppData\\Roaming\\gold.tauri.dev", user_dir))
                     .arg("/PD")
                     .output();
 

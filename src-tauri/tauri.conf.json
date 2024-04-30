@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "tauri-app",
+    "productName": "Tem",
     "version": "0.0.0"
   },
   "tauri": {
@@ -33,7 +33,6 @@
         "readFile": true,
         "writeFile": true,
         "readDir": true
-        
       },
       "protocol": {
         "asset": true,
@@ -43,18 +42,17 @@
       "http": {
         "all": true
       }
-     
     },
     "windows": [
       {
-        "title": "tauri-app",
+        "title": "Tem",
         "width": 1000,
         "height": 600
       }
     ],
 
     "security": {
-      "csp": "default-src 'self'; media-src 'self' asset: asset://localhost"
+      "csp": "default-src 'self'; img-src 'self' https://asset.localhost data: blob:; media-src 'self' asset: asset://localhost asset://asset.localhost;"
     },
     "bundle": {
       "active": true,

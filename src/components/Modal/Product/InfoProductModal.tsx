@@ -176,7 +176,7 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                 </div>
               </div>
 
-              <div className=" mb-4">
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label htmlFor="unit" className=" block" value="Đơn vị" />
@@ -190,7 +190,7 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                     className="flex-1"
                   />
                 </div>
-              </div>
+              </div> */}
               <div className="mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
@@ -214,20 +214,20 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                   </Select>
                 </div>
               </div>
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label htmlFor="image" className=" block" value="Ảnh" />
                   </div>
-                  <div className="">
-                    {/* <FileInput
+                  <div className=""> */}
+              {/* <FileInput
                       id="image"
                       ref={inputImageRef}
                       helperText={errorImage ? errorImage : ""}
                       color={errorImage ? "failure" : ""}
                       onChange={handleFileChange}
                     /> */}
-                    {/* {imagePreview && (
+              {/* {imagePreview && (
                       <div>
                         <div className="flex justify-center border mt-2 relative">
                           <img
@@ -244,14 +244,14 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                         </div>
                       </div>
                     )} */}
-                    {/* <img
+              {/* <img
                       // src="https://www.flowbite-react.com/images/people/profile-picture-5.jpg"
                       // src={imagePreview}
                       src={convertFileSrc(productChoose.image)}
                       className="max-w-[150px]"
                     /> */}
 
-                    {productChoose.image && (
+              {/* {productChoose.image && (
                       <img
                         className=" h-[80px]"
                         // src={convertFileSrc("/home/ctkai/Downloads/ip12.jpeg")}
@@ -264,7 +264,7 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                     )}
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
@@ -298,17 +298,17 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label
-                      htmlFor="goldAge"
+                      htmlFor="goldPercent"
                       className=" block"
-                      value="Tuổi vàng"
+                      value="Hàm lượng vàng"
                     />
                   </div>
 
                   <TextInput
-                    id="goldAge"
-                    type="number"
-                    step="any"
-                    value={productChoose.gold_age}
+                    id="goldPercent"
+                    type="text"
+                    // step="any"
+                    value={productChoose.gold_percent}
                     readOnly={true}
                     className="flex-1"
                     // color={errors.goldAge ? "failure" : ""}
@@ -420,7 +420,7 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                   />
                 </div>
               </div>
-              <div className=" mb-4">
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label
@@ -445,8 +445,8 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                     value={productChoose.stone_price}
                   />
                 </div>
-              </div>
-              <div className=" mb-4">
+              </div> */}
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label
@@ -471,7 +471,7 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                     value={productChoose.price}
                   />
                 </div>
-              </div>
+              </div> */}
 
               <div className=" mb-4">
                 <div className="flex items-center">
@@ -501,7 +501,7 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                 </div>
               </div>
 
-              <div className=" mb-4">
+              {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
                     <Label htmlFor="note" className=" block" value="Ghi chú" />
@@ -514,7 +514,7 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                     value={productChoose.note}
                   />
                 </div>
-              </div>
+              </div> */}
             </div>
             <div className="flex text-xs justify-center gap-4 mt-3">
               <Button size="sm" color="gray" onClick={() => handleModal(false)}>
