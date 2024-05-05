@@ -83,6 +83,8 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
       goldPercent: productChoose.gold_percent,
       goldWeight: productChoose.gold_weight,
       name: productChoose.name,
+      company: productChoose.company,
+      companyAddress: productChoose.company_address,
       // note: productChoose.note,
       // price: productChoose.price,
       quantity: `${productChoose.quantity}`,
@@ -114,7 +116,7 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
 
     if (!isNaN(goldWeightNum) && !isNaN(stoneWeightNum)) {
       const newTotalWeight = (goldWeightNum || 0) + (stoneWeightNum || 0);
-      setTotalWeight(newTotalWeight.toFixed(2));
+      setTotalWeight(newTotalWeight.toFixed(3));
     } else {
       setTotalWeight("");
     }
@@ -211,7 +213,62 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                   <></>
                 )}
               </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="company"
+                      className=" block"
+                      value="Nhà cung cấp"
+                    />
+                  </div>
 
+                  <TextInput
+                    id="company"
+                    type="text"
+                    placeholder=""
+                    className="flex-1"
+                    color={errors.company ? "failure" : ""}
+                    {...register("company")}
+                  />
+                </div>
+
+                {errors.company ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.company.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="company_address"
+                      className=" block"
+                      value="Địa chỉ NCC"
+                    />
+                  </div>
+
+                  <TextInput
+                    id="company_address"
+                    type="text"
+                    placeholder=""
+                    className="flex-1"
+                    color={errors.companyAddress ? "failure" : ""}
+                    {...register("companyAddress")}
+                  />
+                </div>
+
+                {errors.companyAddress ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.companyAddress.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
               {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">
@@ -252,7 +309,9 @@ export default function UpdateProductModal(props: IUpdateProductModalProps) {
                     color={errors.name ? "failure" : ""}
                     className="w-full"
                   >
-                    <option selected value={categoryChose.id}>{categoryChose.name}</option>
+                    <option selected value={categoryChose.id}>
+                      {categoryChose.name}
+                    </option>
                     {/* {categoriesMenu.map((category) => {
                       return (
                         <option

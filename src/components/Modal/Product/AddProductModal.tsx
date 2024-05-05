@@ -83,13 +83,15 @@ export default function AddProductModal(props: IAddProductModalProps) {
 
     if (!isNaN(goldWeightNum) && !isNaN(stoneWeightNum)) {
       const newTotalWeight = (goldWeightNum || 0) + (stoneWeightNum || 0);
-      setTotalWeight(newTotalWeight.toFixed(2));
+      setTotalWeight(newTotalWeight.toFixed(3));
     } else {
       setTotalWeight("");
     }
   }, [goldWeight, stoneWeight]);
 
   const onSubmit = async (data: CreateProduct) => {
+    console.log("Dta: ", data)
+    console.log("totalWeight: ", totalWeight);
     handleAddProduct(data, totalWeight);
     // handleAddCategory(data);
     // reset();
@@ -179,7 +181,62 @@ export default function AddProductModal(props: IAddProductModalProps) {
                   <></>
                 )}
               </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="company"
+                      className=" block"
+                      value="Nhà cung cấp"
+                    />
+                  </div>
 
+                  <TextInput
+                    id="company"
+                    type="text"
+                    placeholder=""
+                    className="flex-1"
+                    color={errors.company ? "failure" : ""}
+                    {...register("company")}
+                  />
+                </div>
+
+                {errors.company ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.company.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="company_address"
+                      className=" block"
+                      value="Địa chỉ NCC"
+                    />
+                  </div>
+
+                  <TextInput
+                    id="company_address"
+                    type="text"
+                    placeholder=""
+                    className="flex-1"
+                    color={errors.company ? "failure" : ""}
+                    {...register("companyAddress")}
+                  />
+                </div>
+
+                {errors.companyAddress ? (
+                  <div className="text-red-500 text-sm mt-1">
+                    <span>{errors.companyAddress.message}</span>
+                  </div>
+                ) : (
+                  <></>
+                )}
+              </div>
               {/* <div className=" mb-4">
                 <div className="flex items-center">
                   <div className="mb-2 min-w-[115px]">

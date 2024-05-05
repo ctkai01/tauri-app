@@ -5,7 +5,7 @@ use xlsxwriter::prelude::*;
 use xlsxwriter::{Format, Workbook, Worksheet};
 // const FONT_SIZE: f64 = 12.0;
 pub fn create_xlsx(products: Vec<Product>, path: String) -> Result<(), XlsxError> {
-    let path_save = format!("{}/gold.xlsx", path);
+    let path_save = format!("{}/gold.xls", path);
     let workbook = Workbook::new(path_save.as_str())?;
     let mut sheet1 = workbook.add_worksheet(None)?;
     sheet1.write_string(0, 0, "Tên", None)?;
@@ -15,18 +15,22 @@ pub fn create_xlsx(products: Vec<Product>, path: String) -> Result<(), XlsxError
     sheet1.write_string(0, 4, "Tổng lượng tổng", None)?;
     sheet1.write_string(0, 5, "Công", None)?;
     sheet1.write_string(0, 6, "Số lượng", None)?;
+    sheet1.write_string(0, 7, "Nhà sản xuất", None)?;
+    sheet1.write_string(0, 8, "Địa chỉ nhà sản xuất", None)?;
     let mut row = 1;
     for product in products {
         let stone_weight_data = format!(
-            "TLD: {}",
+            "KLĐ: {}c",
             product.stone_weight.unwrap_or("0.00".to_string())
         );
         let gold_weight_data =
-            format!("TLV: {}", product.gold_weight.unwrap_or("0.00".to_string()));
-        let total_weight_data = format!("TLT: {}", product.total_weight);
-        let gold_percent_data = format!("HLV.au: {}", product.gold_percent.unwrap_or("0".to_string()));
-        let wage_data = format!("C: {}", product.wage.unwrap_or("0.00".to_string()));
+            format!("{}c", product.gold_weight.unwrap_or("0.00".to_string()));
+        let total_weight_data = format!("KLT: {}c", product.total_weight);
+        let gold_percent_data = format!("HLV: {}", product.gold_percent.unwrap_or("0".to_string()));
+        let wage_data = format!("C: {}đ", product.wage.unwrap_or("0.00".to_string()));
+        let company_data = format!("NCC: {}", product.company.unwrap_or("".to_string()));
         let quantity_data = format!("{}", product.quantity);
+        let company_address_data = format!("{}", product.company_address.unwrap_or("".to_string()));
         sheet1.write_string(row, 0, &product.name, None)?;
            sheet1.write_string(
             row,
@@ -44,6 +48,8 @@ pub fn create_xlsx(products: Vec<Product>, path: String) -> Result<(), XlsxError
         sheet1.write_string(row, 4, total_weight_data.as_str(), None)?;
         sheet1.write_string(row, 5, wage_data.as_str(), None)?;
         sheet1.write_string(row, 6, quantity_data.as_str(), None)?;
+        sheet1.write_string(row, 7, company_data.as_str(), None)?;
+        sheet1.write_string(row, 8, company_address_data.as_str(), None)?;
 
         row += 1
     }

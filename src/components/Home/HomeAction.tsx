@@ -115,6 +115,10 @@ export default function HomeAction(props: IHomeActionProps) {
           }),
         }
       );
+      console.log(
+        "getProductPaginate.products: ",
+        getProductPaginate.products
+      );
       setProducts(getProductPaginate.products);
       setPaginate((paginate) => {
         return {
@@ -173,6 +177,8 @@ export default function HomeAction(props: IHomeActionProps) {
           gold_percent: createProduct.goldPercent,
           stone_weight: createProduct.stoneWeight,
           wage: createProduct.wage,
+          company: createProduct.company,
+          company_address: createProduct.companyAddress,
           total_weight: totalWeightNum,
           quantity: +createProduct.quantity,
           category_id: createProduct.categoryID,
@@ -287,6 +293,8 @@ export default function HomeAction(props: IHomeActionProps) {
           gold_percent: updateProduct.goldPercent,
           stone_weight: updateProduct.stoneWeight,
           // note: updateProduct.note,
+          company: updateProduct.company,
+          company_address: updateProduct.companyAddress,
           wage: updateProduct.wage,
           total_weight: totalWeightNum,
           // stone_price: updateProduct.stonePrice,

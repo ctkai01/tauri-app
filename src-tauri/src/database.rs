@@ -60,9 +60,10 @@ pub fn upgrade_database_if_needed(
     CREATE TABLE IF NOT EXISTS products (
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
+        company TEXT,
+        company_address TEXT,
         category_id INTEGER NOT NULL,
         gold_weight TEXT,
-
         percent_gold TEXT,
         stone_weight TEXT,
         total_weight TEXT,
@@ -102,15 +103,19 @@ pub fn add_product(
     db: &Connection,
 ) -> Result<ProductCreateResponse, rusqlite::Error> {
     let mut statement = db.prepare(
-        "INSERT INTO products (name, category_id, gold_weight, percent_gold, stone_weight, total_weight, wage, quantity) VALUES (@name, @category_id, @gold_weight, @percent_gold, @stone_weight, @total_weight, @wage, @quantity)",
+        "INSERT INTO products (name, company, company_address, category_id, gold_weight, percent_gold, stone_weight, total_weight, wage, quantity) VALUES (@name, @company, @company_address, @category_id, @gold_weight, @percent_gold, @stone_weight, @total_weight, @wage, @quantity)",
     )?;
+    println!("tota: {}", data.total_weight);
+   
     statement.execute(named_params! {
         "@name": data.name,
+        "@company": data.company.as_deref().unwrap_or_default(),
+        "@company_address": data.company_address.as_deref().unwrap_or_default(),
         "@category_id": data.category_id,
         "@gold_weight": data.gold_weight.as_deref().unwrap_or_default(),
         "@percent_gold": data.gold_percent.as_deref().unwrap_or_default(),
         "@stone_weight": data.stone_weight.as_deref().unwrap_or_default(),
-        "@total_weight": data.total_weight,
+        "@total_weight": format!("{:.3}", data.total_weight),
         "@wage": data.wage.as_deref().unwrap_or_default(),
         "@quantity": data.quantity,
     })?;
@@ -122,11 +127,13 @@ pub fn add_product(
         id,
         category_id: data.category_id,
         name: data.name.clone(),
+        company: data.company.clone(),
+        company_address: data.company_address.clone(),
         gold_percent: data.gold_percent.clone(),
         gold_weight: data.gold_weight.clone(),
         quantity: data.quantity,
         stone_weight: data.stone_weight.clone(),
-        total_weight: data.total_weight.to_string(),
+        total_weight: format!("{:.3}", data.total_weight),
         wage: data.wage.clone(),
     };
     Ok(add_product)
@@ -171,20 +178,22 @@ pub fn update_product(
 ) -> Result<ProductUpdateResponse, rusqlite::Error> {
     println!("data update: {:?}", data);
     let mut statement = db.prepare(
-        "UPDATE products SET name = @name, category_id = @category_id, gold_weight = @gold_weight, percent_gold = @percent_gold, stone_weight = @stone_weight, total_weight = @total_weight, wage = @wage, quantity = @quantity WHERE id = @id",
+        "UPDATE products SET name = @name, company = @company, company_address = @company_address, category_id = @category_id, gold_weight = @gold_weight, percent_gold = @percent_gold, stone_weight = @stone_weight, total_weight = @total_weight, wage = @wage, quantity = @quantity WHERE id = @id",
     )?;
 
-    statement.execute(named_params! {"@name": data.name,  "@category_id": data.category_id,  "@gold_weight": data.gold_weight.as_deref().unwrap_or_default(), "@percent_gold": data.gold_percent.as_deref().unwrap_or_default(), "@stone_weight": data.stone_weight.as_deref().unwrap_or_default(),  "@total_weight": data.total_weight,  "@wage": data.wage.as_deref().unwrap_or_default(), "@quantity": data.quantity,  "@id": data.id })?;
+    statement.execute(named_params! {"@name": data.name, "@company": data.company,  "@company_address": data.company_address, "@category_id": data.category_id,  "@gold_weight": data.gold_weight.as_deref().unwrap_or_default(), "@percent_gold": data.gold_percent.as_deref().unwrap_or_default(), "@stone_weight": data.stone_weight.as_deref().unwrap_or_default(),  "@total_weight": format!("{:.3}", data.total_weight),  "@wage": data.wage.as_deref().unwrap_or_default(), "@quantity": data.quantity,  "@id": data.id })?;
 
     let update_product = ProductUpdateResponse {
         id: data.id,
         category_id: data.category_id,
         name: data.name.clone(),
+        company: data.company.clone(),
+        company_address: data.company_address.clone(),
         gold_percent: data.gold_percent.clone(),
         gold_weight: data.gold_weight.clone(),
         quantity: data.quantity,
         stone_weight: data.stone_weight.clone(),
-        total_weight: data.total_weight.to_string(),
+        total_weight: format!("{:.3}", data.total_weight),
         wage: data.wage.clone(),
     };
     Ok(update_product)
@@ -298,15 +307,17 @@ pub fn get_product_by_id(db: &Connection, id: i64) -> Result<Option<Product>, ru
         Ok(Some(Product {
             id: row.get(0)?,
             name: row.get(1)?,
-            category_id: row.get(2)?,
-            gold_weight: row.get(3)?,
-            gold_percent: row.get(4)?,
-            stone_weight: row.get(5)?,
-            total_weight: row.get(6)?,
-            wage: row.get(7)?,
-            quantity: row.get(8)?,
-            created_at: row.get(9)?,
-            updated_at: row.get(10)?,
+            company: row.get(2)?,
+            company_address: row.get(3)?,
+            category_id: row.get(4)?,
+            gold_weight: row.get(5)?,
+            gold_percent: row.get(6)?,
+            stone_weight: row.get(7)?,
+            total_weight: row.get(8)?,
+            wage: row.get(9)?,
+            quantity: row.get(10)?,
+            created_at: row.get(11)?,
+            updated_at: row.get(12)?,
         }))
     } else {
         Ok(None)
@@ -340,15 +351,17 @@ pub fn get_products_by_category_id_paginate(
                 Ok(Product {
                     id: row.get(0)?,
                     name: row.get(1)?,
-                    category_id: row.get(2)?,
-                    gold_weight: row.get(3)?,
-                    gold_percent: row.get(4)?,
-                    stone_weight: row.get(5)?,
-                    total_weight: row.get(6)?,
-                    wage: row.get(7)?,
-                    quantity: row.get(8)?,
-                    created_at: row.get(9)?,
-                    updated_at: row.get(10)?,
+                    company: row.get(2)?,
+                    company_address: row.get(3)?,
+                    category_id: row.get(4)?,
+                    gold_weight: row.get(5)?,
+                    gold_percent: row.get(6)?,
+                    stone_weight: row.get(7)?,
+                    total_weight: row.get(8)?,
+                    wage: row.get(9)?,
+                    quantity: row.get(10)?,
+                    created_at: row.get(11)?,
+                    updated_at: row.get(12)?,
                 })
             },
         )?;
@@ -380,15 +393,17 @@ pub fn get_products_by_category_id_paginate(
                 Ok(Product {
                     id: row.get(0)?,
                     name: row.get(1)?,
-                    category_id: row.get(2)?,
-                    gold_weight: row.get(3)?,
-                    gold_percent: row.get(4)?,
-                    stone_weight: row.get(5)?,
-                    total_weight: row.get(6)?,
-                    wage: row.get(7)?,
-                    quantity: row.get(8)?,
-                    created_at: row.get(9)?,
-                    updated_at: row.get(10)?,
+                    company: row.get(2)?,
+                    company_address: row.get(3)?,
+                    category_id: row.get(4)?,
+                    gold_weight: row.get(5)?,
+                    gold_percent: row.get(6)?,
+                    stone_weight: row.get(7)?,
+                    total_weight: row.get(8)?,
+                    wage: row.get(9)?,
+                    quantity: row.get(10)?,
+                    created_at: row.get(11)?,
+                    updated_at: row.get(12)?,
                 })
             },
         )?;
@@ -418,15 +433,17 @@ pub fn get_products_by_category_id(
         Ok(Product {
             id: row.get(0)?,
             name: row.get(1)?,
-            category_id: row.get(2)?,
-            gold_weight: row.get(3)?,
-            gold_percent: row.get(4)?,
-            stone_weight: row.get(5)?,
-            total_weight: row.get(6)?,
-            wage: row.get(7)?,
-            quantity: row.get(8)?,
-            created_at: row.get(9)?,
-            updated_at: row.get(10)?,
+            company: row.get(2)?,
+            company_address: row.get(3)?,
+            category_id: row.get(4)?,
+            gold_weight: row.get(5)?,
+            gold_percent: row.get(6)?,
+            stone_weight: row.get(7)?,
+            total_weight: row.get(8)?,
+            wage: row.get(9)?,
+            quantity: row.get(10)?,
+            created_at: row.get(11)?,
+            updated_at: row.get(12)?,
         })
     })?;
     let mut products = vec![];

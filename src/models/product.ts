@@ -3,6 +3,8 @@ export interface CreateProduct {
   goldWeight?: string;
   goldPercent?: string;
   stoneWeight?: string;
+  company?: string;
+  companyAddress?: string;
   wage?: string;
   quantity: string;
   categoryID: number;
@@ -15,6 +17,8 @@ export interface UpdateProduct {
   stoneWeight?: string;
   wage?: string;
   quantity: string;
+  company?: string;
+  companyAddress?: string;
   categoryID: number;
 }
 
@@ -25,6 +29,8 @@ export interface Product {
   gold_percent?: string;
   stone_weight?: string;
   wage?: string;
+  company?: string;
+  company_address?: string;
   total_weight: string;
   quantity: number;
   category_id: number;
@@ -39,6 +45,8 @@ export interface UpdateProductToServer {
   gold_percent?: string;
   stone_weight?: string;
   total_weight: number;
+  company?: string;
+  company_address?: string;
   wage?: string;
   quantity: number;
   category_id: number;

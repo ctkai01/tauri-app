@@ -175,6 +175,46 @@ export default function InfoProductModal(props: IInfoProductModalProps) {
                   />
                 </div>
               </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="company"
+                      className=" block"
+                      value="Nhà cung cấp"
+                    />
+                  </div>
+
+                  <TextInput
+                    id="company"
+                    type="text"
+                    placeholder=""
+                    value={productChoose.company}
+                    readOnly={true}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+              <div className=" mb-4">
+                <div className="flex items-center">
+                  <div className="mb-2 min-w-[115px]">
+                    <Label
+                      htmlFor="company_address"
+                      className=" block"
+                      value="Địa chỉ NCC"
+                    />
+                  </div>
+
+                  <TextInput
+                    id="company_address"
+                    type="text"
+                    placeholder=""
+                    value={productChoose.company_address}
+                    readOnly={true}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
 
               {/* <div className=" mb-4">
                 <div className="flex items-center">

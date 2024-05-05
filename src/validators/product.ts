@@ -11,6 +11,14 @@ export const schemeCreateProduct: Yup.ObjectSchema<CreateProduct> = Yup.object({
     .required("Tên mặt hàng là bắt buộc")
     .min(1, "Tên mặt hàng  nhỏ hơn 1 ký tự")
     .max(50, "Tên mặt hàng  lớn hơn 50 ký tự"),
+
+  company: Yup.string()
+    .min(1, "Nhà cung cấp  nhỏ hơn 1 ký tự")
+    .max(6, "Nhà cung cấp  lớn hơn 6 ký tự"),
+
+  companyAddress: Yup.string()
+    .min(1, "Địa chỉ nhỏ hơn 1 ký tự")
+    .max(30, "Địa chỉ lớn hơn 6 ký tự"),
   // unit: Yup.string()
   //   .required("Đơn vi là bắt buộc")
   //   .min(1, "Đơn vi nhỏ hơn 1 ký tự")
@@ -37,7 +45,12 @@ export const schemeUpdateProduct: Yup.ObjectSchema<UpdateProduct> = Yup.object({
     .required("Tên mặt hàng là bắt buộc")
     .min(1, "Tên mặt hàng  nhỏ hơn 1 ký tự")
     .max(50, "Tên mặt hàng  lớn hơn 50 ký tự"),
-  // unit: Yup.string()
+  companyAddress: Yup.string()
+    .min(1, "Địa chỉ nhỏ hơn 1 ký tự")
+    .max(30, "Địa chỉ lớn hơn 6 ký tự"),
+  company: Yup.string()
+    .min(1, "Nhà cung cấp  nhỏ hơn 1 ký tự")
+    .max(6, "Nhà cung cấp  lớn hơn 6 ký tự"), // unit: Yup.string()
   //   .required("Đơn vi là bắt buộc")
   //   .min(1, "Đơn vi nhỏ hơn 1 ký tự")
   //   .max(50, "Đơn vi lớn hơn 30 ký tự"),

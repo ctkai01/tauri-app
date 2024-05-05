@@ -201,10 +201,12 @@ fn print_excel(app_handle: AppHandle, data: String) -> Result<(), String> {
     match excel::create_xlsx(print_product.products, path) {
         Ok(()) => {
             let output =
-                Command::new("C:\\Program Files\\Seagull\\BarTender 2022\\bartend.exe")
+            // Command::new("C:\\Program Files\\Seagull\\BarTender 2022\\bartend.exe")
+                Command::new("C:\\Program Files (x86)\\Seagull\\BarTender Suite\\bartend.exe")
                     .arg(format!("{}\\AppData\\Roaming\\gold.tauri.dev\\tem.btw", user_dir))
                     // .arg(format!("{}\\AppData\\Roaming\\gold.tauri.dev", user_dir))
-                    .arg("/PD")
+                    .arg("/P")
+                    .arg("/X")
                     .output();
 
             // Check if the command executed successfully
