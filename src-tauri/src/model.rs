@@ -31,7 +31,6 @@ pub struct DeleteCategory {
     pub id: i64,
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DeleteProduct {
     pub id: i64,
@@ -137,31 +136,59 @@ pub struct ProductCreateResponse {
     pub category_id: i64,
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SaveImageToFilePayload {
-  pub image_data: Vec<u8>, // Assuming the image file data is sent as a byte array
-  pub file_name: String,   // The name of the file to save the image to
+    pub image_data: Vec<u8>, // Assuming the image file data is sent as a byte array
+    pub file_name: String,   // The name of the file to save the image to
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetProductsByCategory {
-  pub category_id: i64, // Assuming the image file data is sent as a byte array
-  pub page: i64,   // The name of the file to save the image to
-  pub limit: i64,   // The name of the file to save the image to
-  pub search: String,   // The name of the file to save the image to
+    pub category_id: i64, // Assuming the image file data is sent as a byte array
+    pub page: i64,        // The name of the file to save the image to
+    pub limit: i64,       // The name of the file to save the image to
+    pub search: String,   // The name of the file to save the image to
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GetProductsByCategoryRes {
-  pub products: Vec<Product>, // Assuming the image file data is sent as a byte array
-  pub page: i64,  
-  pub limit: i64,  
-  pub total_page: i64,   
-  pub total_count: i64,   
+    pub products: Vec<Product>, // Assuming the image file data is sent as a byte array
+    pub page: i64,
+    pub limit: i64,
+    pub total_page: i64,
+    pub total_count: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PrintProduct {
     pub products: Vec<Product>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Config {
+    pub id: i64,
+    pub name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GetConfig {
+    pub config: Config, // Assuming the image file data is sent as a byte array
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateConfig {
+    pub id: i64,
+    pub name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ConfigCreateResponse {
+    pub id: i64,
+    pub name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateConfig {
+    pub id: i64,
+    pub name: String,
 }

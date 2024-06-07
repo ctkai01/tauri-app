@@ -8,18 +8,18 @@ mod model;
 mod state;
 mod util;
 use std::env;
-use crate::model::{DeleteCategory, UpdateProduct};
+use crate::model::{DeleteCategory, UpdateProduct, CreateConfig, UpdateConfig};
 use model::{
     Category, CreateCategory, CreateProduct, DeleteProduct, GetProductsByCategory,
     GetProductsByCategoryRes, PrintProduct, Product, ProductCreateResponse, ProductUpdateResponse,
-    UpdateCategory,
+    UpdateCategory, Config,
 };
 use state::{AppState, ServiceAccess};
 use std::{
     fs::{self, File},
     sync::{Arc, Mutex}, process::Command,
 };
-use tauri::{api::path::BaseDirectory, utils::config, AppHandle, Config, Manager, State};
+use tauri::{api::path::BaseDirectory, utils::config, AppHandle, Manager, State};
 use util::save_image;
 
 #[tauri::command]
@@ -29,6 +29,19 @@ fn create_category(app_handle: AppHandle, data: String) -> Result<i64, String> {
     println!("create_category: {:?}", create_category);
     let id = app_handle
         .db(|db| database::add_category(create_category, db))
+        .unwrap();
+
+    // let items = app_handle.db(|db| database::get_all(db)).unwrap();
+    Ok(id)
+}
+
+#[tauri::command]
+fn create_config(app_handle: AppHandle, data: String) -> Result<i64, String> {
+    // Should handle errors instead of unwrapping here
+    let create_config: CreateConfig = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    println!("create_config: {:?}", create_config);
+    let id = app_handle
+        .db(|db| database::add_config(create_config, db))
         .unwrap();
 
     // let items = app_handle.db(|db| database::get_all(db)).unwrap();
@@ -105,12 +118,40 @@ fn get_categories_all(app_handle: AppHandle) -> Result<Vec<Category>, String> {
 }
 
 #[tauri::command]
+fn get_config(app_handle: AppHandle) -> Result<Vec<Config>, String> {
+    // Should handle errors instead of unwrapping here
+    // let create_category: CreateCategory = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    let config = app_handle.db(|db| database::get_all_config(db)).unwrap();
+
+    // let items = app_handle.db(|db| database::get_all(db)).unwrap();
+    Ok(config)
+}
+
+#[tauri::command]
 fn update_category(app_handle: AppHandle, data: String) -> Result<(), String> {
     // Should handle errors instead of unwrapping here
     // let create_category: CreateCategory = serde_json::from_str(&data).map_err(|e| e.to_string())?;
     let update_category: UpdateCategory = serde_json::from_str(&data).map_err(|e| e.to_string())?;
     println!("update_category: {:?}", update_category);
     let result = app_handle.db(|db| database::update_category(update_category, db));
+
+    match result {
+        Ok(_) => {}
+        Err(err) => {
+            println!("Err: {:?}", err)
+        }
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+fn update_config(app_handle: AppHandle, data: String) -> Result<(), String> {
+    // Should handle errors instead of unwrapping here
+    // let create_category: CreateCategory = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    let update_config: UpdateConfig = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    println!("update_config: {:?}", update_config);
+    let result = app_handle.db(|db| database::update_config(update_config, db));
 
     match result {
         Ok(_) => {}
@@ -268,7 +309,10 @@ fn main() {
             get_product_by_category,
             update_product,
             delete_product,
-            print_excel
+            print_excel,
+            create_config,
+            update_config,
+            get_config,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -6,7 +6,7 @@ use tauri::AppHandle;
 use crate::model::{
     Category, CreateCategory, CreateProduct, DeleteCategory, DeleteProduct, GetProductsByCategory,
     GetProductsByCategoryRes, Product, ProductCreateResponse, ProductUpdateResponse,
-    UpdateCategory, UpdateProduct,
+    UpdateCategory, UpdateProduct, CreateConfig, UpdateConfig, Config,
 };
 
 const CURRENT_DB_VERSION: u32 = 1;
@@ -73,6 +73,10 @@ pub fn upgrade_database_if_needed(
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (category_id) REFERENCES categories(id)
     );
+    CREATE TABLE IF NOT EXISTS configs (
+        ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+    );
      ",
         )?;
 
@@ -90,6 +94,20 @@ pub fn add_category(data: CreateCategory, db: &Connection) -> Result<i64, rusqli
         "@name": data.name,
         "@parent_id": data.parent_id.unwrap_or_default(),
         "@code": data.code,
+    })?;
+
+    // Retrieve the ID of the last inserted row
+    let id = db.last_insert_rowid();
+
+    Ok(id)
+}
+
+pub fn add_config(data: CreateConfig, db: &Connection) -> Result<i64, rusqlite::Error> {
+    let mut statement = db.prepare(
+        "INSERT INTO configs (name) VALUES (@name)",
+    )?;
+    statement.execute(named_params! {
+        "@name": data.name,
     })?;
 
     // Retrieve the ID of the last inserted row
@@ -168,6 +186,16 @@ pub fn update_category(data: UpdateCategory, db: &Connection) -> Result<(), rusq
         "UPDATE categories SET code = @code, name = @name, parent_id = @parent_id WHERE id = @id",
     )?;
     statement.execute(named_params! {"@code": data.code, "@name": data.name,  "@parent_id": data.parent_id.unwrap_or_default(), "@id": data.id })?;
+
+    Ok(())
+}
+
+pub fn update_config(data: UpdateConfig, db: &Connection) -> Result<(), rusqlite::Error> {
+    println!("data update: {:?}", data);
+    let mut statement = db.prepare(
+        "UPDATE configs SET name = @name WHERE id = @id",
+    )?;
+    statement.execute(named_params! {"@name": data.name, "@id": data.id })?;
 
     Ok(())
 }
@@ -296,6 +324,24 @@ pub fn get_all_category(db: &Connection) -> Result<Vec<Category>, rusqlite::Erro
     }
     println!("categories: {:?}", categories);
     Ok(categories)
+}
+
+pub fn get_all_config(db: &Connection) -> Result<Vec<Config>, rusqlite::Error> {
+    let mut stmt = db.prepare("Select ID, name FROM configs")?;
+
+    let config_iter = stmt.query_map([], |row| {
+        Ok(Config {
+            id: row.get(0)?,
+            name: row.get(1)?,
+        })
+    })?;
+    let mut configs = vec![];
+    for config_result in config_iter {
+        let config = config_result?;
+        configs.push(config);
+    }
+    println!("configs: {:?}", configs);
+    Ok(configs)
 }
 
 pub fn get_product_by_id(db: &Connection, id: i64) -> Result<Option<Product>, rusqlite::Error> {

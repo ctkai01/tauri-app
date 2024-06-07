@@ -26,6 +26,7 @@ import InfoProductModal from "../Modal/Product/InfoProductModal";
 import UpdateProductModal from "../Modal/Product/UpdateProductModal";
 import TableContent from "./TableContent";
 import { IoMdPrint } from "react-icons/io";
+import { IoIosSave } from "react-icons/io";
 export interface IHomeActionProps {
   categoryChose: Category;
 }
@@ -50,6 +51,7 @@ export default function HomeAction(props: IHomeActionProps) {
   const [openInfoProductModal, setOpenInfoProductModal] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [search, setSearch] = React.useState("");
+  const [businessName, setBusinessName] = React.useState("");
   const [checkboxes, setCheckboxes] = React.useState<CheckboxProduct[]>([]);
   const [paginate, setPaginate] = React.useState<Paginate>({
     limit: LIMIT,
@@ -115,10 +117,7 @@ export default function HomeAction(props: IHomeActionProps) {
           }),
         }
       );
-      console.log(
-        "getProductPaginate.products: ",
-        getProductPaginate.products
-      );
+      console.log("getProductPaginate.products: ", getProductPaginate.products);
       setProducts(getProductPaginate.products);
       setPaginate((paginate) => {
         return {
@@ -427,6 +426,20 @@ export default function HomeAction(props: IHomeActionProps) {
               setSearch(e.target.value);
             }}
           />
+
+          <TextInput
+            className="mr-2"
+            type="text"
+            placeholder="Tên doanh nghiệp"
+            onChange={(e) => {
+              setBusinessName(e.target.value);
+            }}
+          />
+          <Tooltip content="Lưu tên doanh nghiệp">
+            <Button className="mr-2" color="blue" onClick={() => {}}>
+              <IoIosSave />
+            </Button>
+          </Tooltip>
           <div className="flex-1 flex justify-end">
             <Tooltip content="In">
               <Button
