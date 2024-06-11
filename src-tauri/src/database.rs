@@ -4,12 +4,13 @@ use std::fs;
 use tauri::AppHandle;
 
 use crate::model::{
-    Category, CreateCategory, CreateProduct, DeleteCategory, DeleteProduct, GetProductsByCategory,
-    GetProductsByCategoryRes, Product, ProductCreateResponse, ProductUpdateResponse,
-    UpdateCategory, UpdateProduct, CreateConfig, UpdateConfig, Config,
+    Category, Config, CreateCategory, CreateConfig, CreateProduct, DeleteCategory, DeleteProduct,
+    GetProductsByCategory, GetProductsByCategoryRes, Product, ProductCreateResponse,
+    ProductUpdateResponse, UpdateCategory, UpdateConfig, UpdateProduct,
 };
 
-const CURRENT_DB_VERSION: u32 = 1;
+const DB_VERSION_1: u32 = 1;
+const DB_VERSION_2: u32 = 2;
 
 /// Initializes the database connection, creating the .sqlite file if needed, and upgrading the database
 /// if it's out of date.
@@ -38,14 +39,13 @@ pub fn upgrade_database_if_needed(
     existing_version: u32,
 ) -> Result<(), rusqlite::Error> {
     println!("existing_version: {:?}", existing_version);
-    println!("CURRENT_DB_VERSION: {:?}", CURRENT_DB_VERSION);
+    // println!("CURRENT_DB_VERSION: {:?}", CURRENT_DB_VERSION);
 
-    if existing_version < CURRENT_DB_VERSION {
+    if existing_version < DB_VERSION_1 {
         db.pragma_update(None, "journal_mode", "WAL")?;
-        println!("HELLO");
         let tx = db.transaction()?;
 
-        tx.pragma_update(None, "user_version", CURRENT_DB_VERSION)?;
+        tx.pragma_update(None, "user_version", DB_VERSION_1)?;
 
         tx.execute_batch(
             "
@@ -73,9 +73,23 @@ pub fn upgrade_database_if_needed(
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (category_id) REFERENCES categories(id)
     );
+     ",
+        )?;
+
+        tx.commit()?;
+    }
+
+    if existing_version < DB_VERSION_2 {
+        db.pragma_update(None, "journal_mode", "WAL")?;
+        let tx = db.transaction()?;
+
+        tx.pragma_update(None, "user_version", DB_VERSION_2)?;
+
+        tx.execute_batch(
+            "
     CREATE TABLE IF NOT EXISTS configs (
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        name TEXT NOT NULL
     );
      ",
         )?;
@@ -103,9 +117,7 @@ pub fn add_category(data: CreateCategory, db: &Connection) -> Result<i64, rusqli
 }
 
 pub fn add_config(data: CreateConfig, db: &Connection) -> Result<i64, rusqlite::Error> {
-    let mut statement = db.prepare(
-        "INSERT INTO configs (name) VALUES (@name)",
-    )?;
+    let mut statement = db.prepare("INSERT INTO configs (name) VALUES (@name)")?;
     statement.execute(named_params! {
         "@name": data.name,
     })?;
@@ -124,7 +136,7 @@ pub fn add_product(
         "INSERT INTO products (name, company, company_address, category_id, gold_weight, percent_gold, stone_weight, total_weight, wage, quantity) VALUES (@name, @company, @company_address, @category_id, @gold_weight, @percent_gold, @stone_weight, @total_weight, @wage, @quantity)",
     )?;
     println!("tota: {}", data.total_weight);
-   
+
     statement.execute(named_params! {
         "@name": data.name,
         "@company": data.company.as_deref().unwrap_or_default(),
@@ -192,9 +204,7 @@ pub fn update_category(data: UpdateCategory, db: &Connection) -> Result<(), rusq
 
 pub fn update_config(data: UpdateConfig, db: &Connection) -> Result<(), rusqlite::Error> {
     println!("data update: {:?}", data);
-    let mut statement = db.prepare(
-        "UPDATE configs SET name = @name WHERE id = @id",
-    )?;
+    let mut statement = db.prepare("UPDATE configs SET name = @name WHERE id = @id")?;
     statement.execute(named_params! {"@name": data.name, "@id": data.id })?;
 
     Ok(())

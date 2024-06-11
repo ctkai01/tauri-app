@@ -27,6 +27,7 @@ import UpdateProductModal from "../Modal/Product/UpdateProductModal";
 import TableContent from "./TableContent";
 import { IoMdPrint } from "react-icons/io";
 import { IoIosSave } from "react-icons/io";
+import { Config, GetConfig } from "../../models/config";
 export interface IHomeActionProps {
   categoryChose: Category;
 }
@@ -52,6 +53,10 @@ export default function HomeAction(props: IHomeActionProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [businessName, setBusinessName] = React.useState("");
+  const [config, setConfig] = React.useState<Config>({
+    id: 0,
+    name: "",
+  });
   const [checkboxes, setCheckboxes] = React.useState<CheckboxProduct[]>([]);
   const [paginate, setPaginate] = React.useState<Paginate>({
     limit: LIMIT,
@@ -104,6 +109,29 @@ export default function HomeAction(props: IHomeActionProps) {
   };
 
   React.useEffect(() => {
+    const fetchConfigs = async () => {
+      setIsLoading(true);
+      const getConfig: Config[] = await invoke("get_config");
+      console.log("Config: ", getConfig);
+      if (getConfig.length) {
+        setConfig(getConfig[0]);
+        setBusinessName(getConfig[0].name);
+      } else {
+        const configDefault: Config = {
+          id: 0,
+          name: "",
+        };
+        setConfig(configDefault);
+        setBusinessName("");
+      }
+      setIsLoading(false);
+    };
+    fetchConfigs();
+  }, []);
+
+  console.log("business: ", businessName);
+
+  React.useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
       const getProductPaginate: GetProductPaginate = await invoke(
@@ -146,6 +174,53 @@ export default function HomeAction(props: IHomeActionProps) {
     });
     setCheckboxes(data);
   }, [products]);
+
+  const handleSaveBusiness = async () => {
+    try {
+      if (config.id) {
+        //Update
+        await invoke("update_config", {
+          data: JSON.stringify({
+            name: businessName,
+            id: config.id,
+          }),
+        });
+        setConfig({
+          id: config.id,
+          name: businessName,
+        });
+      } else {
+        const createdConfig: number = await invoke("create_config", {
+          data: JSON.stringify({
+            name: businessName,
+          }),
+        });
+
+        setConfig({
+          id: createdConfig,
+          name: businessName,
+        });
+      }
+
+      toast(
+        <div className="font-bold">Cập nhật tên doanh nghiệp thành công</div>,
+        {
+          draggable: false,
+          position: "top-right",
+          type: "success",
+        }
+      );
+    } catch (err) {
+      toast(
+        <div className="font-bold">Cập nhật tên doanh nghiệp thất bại</div>,
+        {
+          draggable: false,
+          position: "top-right",
+          type: "error",
+        }
+      );
+    }
+  };
 
   const handleAddProduct = async (
     createProduct: CreateProduct,
@@ -368,6 +443,7 @@ export default function HomeAction(props: IHomeActionProps) {
       await invoke("print_excel", {
         data: JSON.stringify({
           products: productPrint,
+          business: businessName
         }),
       });
       console.log("Print: ", productPrint);
@@ -430,13 +506,20 @@ export default function HomeAction(props: IHomeActionProps) {
           <TextInput
             className="mr-2"
             type="text"
+            value={businessName}
             placeholder="Tên doanh nghiệp"
             onChange={(e) => {
               setBusinessName(e.target.value);
             }}
           />
           <Tooltip content="Lưu tên doanh nghiệp">
-            <Button className="mr-2" color="blue" onClick={() => {}}>
+            <Button
+              className="mr-2"
+              color="blue"
+              onClick={() => {
+                handleSaveBusiness();
+              }}
+            >
               <IoIosSave />
             </Button>
           </Tooltip>

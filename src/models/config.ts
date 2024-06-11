@@ -1,5 +1,5 @@
 export interface Config {
-  id: number;
+  id?: number;
   name: string;
 }
 
@@ -11,3 +11,4 @@ export interface UpdateConfigToServer {
 export interface GetConfig {
   config: Config[];
 }
+

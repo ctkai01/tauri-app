@@ -162,6 +162,7 @@ pub struct GetProductsByCategoryRes {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PrintProduct {
     pub products: Vec<Product>,
+    pub business: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -177,7 +178,6 @@ pub struct GetConfig {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateConfig {
-    pub id: i64,
     pub name: String,
 }
 

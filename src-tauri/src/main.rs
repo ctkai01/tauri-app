@@ -239,7 +239,7 @@ fn print_excel(app_handle: AppHandle, data: String) -> Result<(), String> {
     };
    
     let path: String = app_handle.path_image();
-    match excel::create_xlsx(print_product.products, path) {
+    match excel::create_xlsx(print_product.products, print_product.business, path) {
         Ok(()) => {
             let output =
             // Command::new("C:\\Program Files\\Seagull\\BarTender 2022\\bartend.exe")
