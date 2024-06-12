@@ -11,6 +11,7 @@ use crate::model::{
 
 const DB_VERSION_1: u32 = 1;
 const DB_VERSION_2: u32 = 2;
+const DB_VERSION_3: u32 = 3;
 
 /// Initializes the database connection, creating the .sqlite file if needed, and upgrading the database
 /// if it's out of date.
@@ -97,6 +98,21 @@ pub fn upgrade_database_if_needed(
         tx.commit()?;
     }
 
+    if existing_version < DB_VERSION_3 {
+        db.pragma_update(None, "journal_mode", "WAL")?;
+        let tx = db.transaction()?;
+
+        tx.pragma_update(None, "user_version", DB_VERSION_3)?;
+
+        tx.execute_batch(
+            "
+            ALTER TABLE configs ADD COLUMN address TEXT;
+        ",
+        )?;
+
+        tx.commit()?;
+    }
+
     Ok(())
 }
 
@@ -117,9 +133,10 @@ pub fn add_category(data: CreateCategory, db: &Connection) -> Result<i64, rusqli
 }
 
 pub fn add_config(data: CreateConfig, db: &Connection) -> Result<i64, rusqlite::Error> {
-    let mut statement = db.prepare("INSERT INTO configs (name) VALUES (@name)")?;
+    let mut statement = db.prepare("INSERT INTO configs (name, address) VALUES (@name, @address)")?;
     statement.execute(named_params! {
         "@name": data.name,
+        "@address": data.address.unwrap_or_default(),
     })?;
 
     // Retrieve the ID of the last inserted row
@@ -204,8 +221,8 @@ pub fn update_category(data: UpdateCategory, db: &Connection) -> Result<(), rusq
 
 pub fn update_config(data: UpdateConfig, db: &Connection) -> Result<(), rusqlite::Error> {
     println!("data update: {:?}", data);
-    let mut statement = db.prepare("UPDATE configs SET name = @name WHERE id = @id")?;
-    statement.execute(named_params! {"@name": data.name, "@id": data.id })?;
+    let mut statement = db.prepare("UPDATE configs SET name = @name, address = @address WHERE id = @id")?;
+    statement.execute(named_params! {"@name": data.name, "@id": data.id,  "@address": data.address.unwrap_or_default()})?;
 
     Ok(())
 }
@@ -337,12 +354,13 @@ pub fn get_all_category(db: &Connection) -> Result<Vec<Category>, rusqlite::Erro
 }
 
 pub fn get_all_config(db: &Connection) -> Result<Vec<Config>, rusqlite::Error> {
-    let mut stmt = db.prepare("Select ID, name FROM configs")?;
+    let mut stmt = db.prepare("Select ID, name, address FROM configs")?;
 
     let config_iter = stmt.query_map([], |row| {
         Ok(Config {
             id: row.get(0)?,
             name: row.get(1)?,
+            address: row.get(2)?,
         })
     })?;
     let mut configs = vec![];

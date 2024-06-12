@@ -53,9 +53,11 @@ export default function HomeAction(props: IHomeActionProps) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [businessName, setBusinessName] = React.useState("");
+  const [address, setAddress] = React.useState("");
   const [config, setConfig] = React.useState<Config>({
     id: 0,
     name: "",
+    address: "",
   });
   const [checkboxes, setCheckboxes] = React.useState<CheckboxProduct[]>([]);
   const [paginate, setPaginate] = React.useState<Paginate>({
@@ -116,10 +118,12 @@ export default function HomeAction(props: IHomeActionProps) {
       if (getConfig.length) {
         setConfig(getConfig[0]);
         setBusinessName(getConfig[0].name);
+        setAddress(getConfig[0].address ? getConfig[0].address : "");
       } else {
         const configDefault: Config = {
           id: 0,
           name: "",
+          address: "",
         };
         setConfig(configDefault);
         setBusinessName("");
@@ -130,6 +134,7 @@ export default function HomeAction(props: IHomeActionProps) {
   }, []);
 
   console.log("business: ", businessName);
+  console.log("address: ", address);
 
   React.useEffect(() => {
     const fetchProducts = async () => {
@@ -177,46 +182,62 @@ export default function HomeAction(props: IHomeActionProps) {
 
   const handleSaveBusiness = async () => {
     try {
-      if (config.id) {
-        //Update
-        await invoke("update_config", {
-          data: JSON.stringify({
-            name: businessName,
+      if (businessName) {
+        if (config.id) {
+          //Update
+          await invoke("update_config", {
+            data: JSON.stringify({
+              name: businessName,
+              id: config.id,
+              address: address
+            }),
+          });
+          setConfig({
             id: config.id,
-          }),
-        });
-        setConfig({
-          id: config.id,
-          name: businessName,
-        });
-      } else {
-        const createdConfig: number = await invoke("create_config", {
-          data: JSON.stringify({
             name: businessName,
-          }),
-        });
+          });
+        } else {
+          const createdConfig: number = await invoke("create_config", {
+            data: JSON.stringify({
+              name: businessName,
+              address: address,
+            }),
+          });
 
-        setConfig({
-          id: createdConfig,
-          name: businessName,
-        });
-      }
-
-      toast(
-        <div className="font-bold">Cập nhật tên doanh nghiệp thành công</div>,
-        {
-          draggable: false,
-          position: "top-right",
-          type: "success",
+          setConfig({
+            id: createdConfig,
+            name: businessName,
+            address
+          });
         }
-      );
+
+        toast(
+          <div className="font-bold">Cập nhật tên doanh nghiệp thành công</div>,
+          {
+            draggable: false,
+            position: "top-right",
+            type: "success",
+          }
+        );
+      } else {
+         toast(
+           <div className="font-bold">
+             Cập nhật tên doanh nghiệp thành công
+           </div>,
+           {
+             draggable: false,
+             position: "top-right",
+             type: "success",
+           }
+         );
+      }
     } catch (err) {
       toast(
-        <div className="font-bold">Cập nhật tên doanh nghiệp thất bại</div>,
+        <div className="font-bold">Vui lòng nhập tên doanh nghiệp</div>,
         {
           draggable: false,
           position: "top-right",
-          type: "error",
+          type: "warning",
         }
       );
     }
@@ -443,7 +464,8 @@ export default function HomeAction(props: IHomeActionProps) {
       await invoke("print_excel", {
         data: JSON.stringify({
           products: productPrint,
-          business: businessName
+          business: businessName,
+          address
         }),
       });
       console.log("Print: ", productPrint);
@@ -512,7 +534,16 @@ export default function HomeAction(props: IHomeActionProps) {
               setBusinessName(e.target.value);
             }}
           />
-          <Tooltip content="Lưu tên doanh nghiệp">
+          <TextInput
+            className="mr-2"
+            type="text"
+            value={address}
+            placeholder="Địa chỉ doanh nghiệp"
+            onChange={(e) => {
+              setAddress(e.target.value);
+            }}
+          />
+          <Tooltip content="Lưu thông tin">
             <Button
               className="mr-2"
               color="blue"

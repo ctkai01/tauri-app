@@ -187,7 +187,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
                     <Label
                       htmlFor="company"
                       className=" block"
-                      value="Nhà cung cấp"
+                      value="Tiêu chuẩn cơ sở"
                     />
                   </div>
 
@@ -215,7 +215,7 @@ export default function AddProductModal(props: IAddProductModalProps) {
                     <Label
                       htmlFor="company_address"
                       className=" block"
-                      value="Địa chỉ NCC"
+                      value="Số hiệu"
                     />
                   </div>
 

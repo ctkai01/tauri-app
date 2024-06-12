@@ -163,12 +163,14 @@ pub struct GetProductsByCategoryRes {
 pub struct PrintProduct {
     pub products: Vec<Product>,
     pub business: Option<String>,
+    pub address: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub id: i64,
     pub name: String,
+    pub address: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -179,6 +181,7 @@ pub struct GetConfig {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateConfig {
     pub name: String,
+    pub address: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -191,4 +194,5 @@ pub struct ConfigCreateResponse {
 pub struct UpdateConfig {
     pub id: i64,
     pub name: String,
+    pub address: Option<String>,
 }
